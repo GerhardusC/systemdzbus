@@ -27,7 +27,7 @@
 //!
 //!       Ok(())
 //!   }
-//!``
+//!```
 
 //!Because this is literally just the [zbus library](https://docs.rs/zbus/latest/zbus/), and I contributed
 //!absolutely nothing special, I think it is async runtime agnostic.
