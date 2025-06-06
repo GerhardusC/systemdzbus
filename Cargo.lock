@@ -575,7 +575,7 @@ dependencies = [
 
 [[package]]
 name = "systemdzbus"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "smol",
  "zbus",
