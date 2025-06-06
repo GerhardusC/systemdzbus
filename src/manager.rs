@@ -148,9 +148,9 @@ pub trait Manager {
         flags: u64,
     ) -> zbus::Result<(bool, Vec<(String, String, String)>)>;
 
-    /// EnqueueMarkedJobs()
+    /// # EnqueueMarkedJobs()
     /// ## METHOD
-    /// EnqueueMarkedJobs() creates reload/restart jobs for units which have been appropriately marked, see Marks property above. This is equivalent to calling TryRestartUnit() or ReloadOrTryRestartUnit() for the marked units.
+    /// Creates reload/restart jobs for units which have been appropriately marked, see Marks property above. This is equivalent to calling TryRestartUnit() or ReloadOrTryRestartUnit() for the marked units.
     fn enqueue_marked_jobs(&self) -> zbus::Result<Vec<zbus::zvariant::OwnedObjectPath>>;
 
     /// EnqueueUnitJob method
