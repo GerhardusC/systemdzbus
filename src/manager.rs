@@ -132,7 +132,16 @@ pub trait Manager {
         force: bool,
     ) -> zbus::Result<(bool, Vec<(String, String, String)>)>;
 
-    /// EnableUnitFilesWithFlags method
+    /// # EnableUnitFilesWithFlags()
+    /// ## METHOD
+    /// The EnableUnitFilesWithFlags() and DisableUnitFilesWithFlags() take in options as flags instead of booleans to allow for extendability, defined as follows:
+    ///
+    ///  #define SD_SYSTEMD_UNIT_RUNTIME  (UINT64_C(1) << 0)
+    ///  #define SD_SYSTEMD_UNIT_FORCE    (UINT64_C(1) << 1)
+    ///  #define SD_SYSTEMD_UNIT_PORTABLE (UINT64_C(1) << 2)
+    ///
+    /// SD_SYSTEMD_UNIT_RUNTIME will enable or disable the unit for runtime only, SD_SYSTEMD_UNIT_FORCE controls whether symlinks pointing to other units shall be replaced
+    /// if necessary.  SD_SYSTEMD_UNIT_PORTABLE will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.
     fn enable_unit_files_with_flags(
         &self,
         files: &[&str],
