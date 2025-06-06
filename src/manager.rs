@@ -47,7 +47,9 @@ pub trait Manager {
         pids: &[u32],
     ) -> zbus::Result<()>;
 
-    /// BindMountUnit method
+    /// # BindMountUnit()
+    /// ## METHOD
+    /// Can be used to bind mount new files or directories into a running service mount namespace.
     fn bind_mount_unit(
         &self,
         name: &str,
@@ -57,13 +59,20 @@ pub trait Manager {
         mkdir: bool,
     ) -> zbus::Result<()>;
 
-    /// CancelJob method
+    /// # CancelJob()
+    /// ## METHOD
+    /// Cancels a specific job identified by its numeric ID. This operation is also available in the Cancel() method of Job objects (see below) and exists primarily to reduce the necessary round trips to execute this
+    /// operation. Note that this will not have any effect on jobs whose execution has already begun.
     fn cancel_job(&self, id: u32) -> zbus::Result<()>;
 
     /// CleanUnit method
     fn clean_unit(&self, name: &str, mask: &[&str]) -> zbus::Result<()>;
 
-    /// ClearJobs method
+    /// # ClearJobs()
+    /// ## METHOD
+    /// Flushes the job queue, removing all jobs that are still queued.
+    /// Note that this does not have any effect on jobs whose execution has already begun.
+    /// It only flushes jobs that are queued and have not yet begun execution.
     fn clear_jobs(&self) -> zbus::Result<()>;
 
     /// DisableUnitFiles method
@@ -86,7 +95,33 @@ pub trait Manager {
     /// DumpByFileDescriptor method
     fn dump_by_file_descriptor(&self) -> zbus::Result<zbus::zvariant::OwnedFd>;
 
-    /// EnableUnitFiles method
+    /// # EnableUnitFiles()
+    /// ## METHOD
+    /// May be used to enable one or more units in the system (by creating symlinks to them in /etc/ or /run/). It takes a list of unit files to enable (either just file names or full
+    /// absolute paths if the unit files are residing outside the usual unit search paths) and two booleans: the first controls whether the unit shall be enabled for runtime only (true, /run/), or
+    /// persistently (false, /etc/). The second one controls whether symlinks pointing to other units shall be replaced if necessary. This method returns one boolean and an array of the changes made. The
+    /// boolean signals whether the unit files contained any enablement information (i.e. an [Install]) section. The changes array consists of structures with three strings: the type of the change (one of
+    /// "symlink" or "unlink"), the file name of the symlink and the destination of the symlink. Note that most of the following calls return a changes list in the same format.
+    ///
+    /// Similarly, DisableUnitFiles() disables one or more units in the system, i.e. removes all symlinks to them in /etc/ and /run/.
+    ///
+    /// The EnableUnitFilesWithFlags() and DisableUnitFilesWithFlags() take in options as flags instead of booleans to allow for extendability, defined as follows:
+    ///
+    ///     #define SD_SYSTEMD_UNIT_RUNTIME  (UINT64_C(1) << 0)
+    ///     #define SD_SYSTEMD_UNIT_FORCE    (UINT64_C(1) << 1)
+    ///     #define SD_SYSTEMD_UNIT_PORTABLE (UINT64_C(1) << 2)
+    ///
+    /// SD_SYSTEMD_UNIT_RUNTIME will enable or disable the unit for runtime only, SD_SYSTEMD_UNIT_FORCE controls whether symlinks pointing to other units shall be replaced if necessary.
+    /// SD_SYSTEMD_UNIT_PORTABLE will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.
+    ///
+    /// Similarly, ReenableUnitFiles() applies the changes to one or more units that would result from disabling and enabling the unit quickly one after the other in an atomic fashion. This is useful to apply
+    /// updated [Install] information contained in unit files.
+    ///
+    /// Similarly, LinkUnitFiles() links unit files (that are located outside of the usual unit search paths) into the unit search path.
+    ///
+    /// Similarly, PresetUnitFiles() enables/disables one or more unit files according to the preset policy. See systemd.preset(7) for more information.
+    ///
+    /// Similarly, MaskUnitFiles() masks unit files and UnmaskUnitFiles() unmasks them again.
     fn enable_unit_files(
         &self,
         files: &[&str],
@@ -101,7 +136,9 @@ pub trait Manager {
         flags: u64,
     ) -> zbus::Result<(bool, Vec<(String, String, String)>)>;
 
-    /// EnqueueMarkedJobs method
+    /// EnqueueMarkedJobs()
+    /// ## METHOD
+    /// EnqueueMarkedJobs() creates reload/restart jobs for units which have been appropriately marked, see Marks property above. This is equivalent to calling TryRestartUnit() or ReloadOrTryRestartUnit() for the marked units.
     fn enqueue_marked_jobs(&self) -> zbus::Result<Vec<zbus::zvariant::OwnedObjectPath>>;
 
     /// EnqueueUnitJob method
@@ -126,19 +163,25 @@ pub trait Manager {
         )>,
     )>;
 
-    /// Exit method
+    /// # Exit()
+    /// ## METHOD
+    /// May be invoked to ask the manager to exit. This is not available for the system manager and is useful only for user session managers.
     fn exit(&self) -> zbus::Result<()>;
 
     /// FreezeUnit method
     fn freeze_unit(&self, name: &str) -> zbus::Result<()>;
 
-    /// GetDefaultTarget method
+    /// # GetDefaultTarget()
+    /// ## METHOD
+    /// Retrieves the name of the unit to which default.target is aliased.
     fn get_default_target(&self) -> zbus::Result<String>;
 
     /// GetDynamicUsers method
     fn get_dynamic_users(&self) -> zbus::Result<Vec<(u32, String)>>;
 
-    /// GetJob method
+    /// # GetJob()
+    /// ## METHOD
+    /// Returns the job object path for a specific job, identified by its id.
     fn get_job(&self, id: u32) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
     /// GetJobAfter method
@@ -171,10 +214,16 @@ pub trait Manager {
         )>,
     >;
 
-    /// GetUnit method
+    /// # GetUnit()
+    /// ## METHOD
+    /// May be used to get the unit object path for a unit name. It takes the unit name and returns
+    /// the object path. If a unit has not been loaded yet by this name this method will fail.
     fn get_unit(&self, name: &str) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
-    /// GetUnitByControlGroup method
+    /// # GetUnitByControlGroup()
+    /// ## METHOD
+    /// May be used to get the unit object path of the unit a process ID belongs to. It takes a
+    /// UNIX PID and returns the object path. The PID must refer to an existing system process.
     fn get_unit_by_control_group(
         &self,
         cgroup: &str,
@@ -194,7 +243,9 @@ pub trait Manager {
     /// GetUnitFileLinks method
     fn get_unit_file_links(&self, name: &str, runtime: bool) -> zbus::Result<Vec<String>>;
 
-    /// GetUnitFileState method
+    /// # GetUnitFileState()
+    /// ## METHOD
+    /// Returns the current enablement status of a specific unit file.
     fn get_unit_file_state(&self, file: &str) -> zbus::Result<String>;
 
     /// GetUnitProcesses method
@@ -207,7 +258,11 @@ pub trait Manager {
     #[zbus(name = "KExec")]
     fn kexec(&self) -> zbus::Result<()>;
 
-    /// KillUnit method
+    /// # KillUnit()
+    /// ## METHOD
+    /// May be used to kill (i.e. send a signal to) all processes of a unit. It takes the unit name, an enum who and a UNIX signal number to send. The who enum is one of "main", "control" or "all". If "main", only the main
+    /// process of the unit is killed. If "control", only the control process of the unit is killed. If "all", all processes are killed. A "control" process is for example a process that is configured via ExecStop= and is spawned in
+    /// parallel to the main daemon process in order to shut it down.
     fn kill_unit(&self, name: &str, whom: &str, signal: i32) -> zbus::Result<()>;
 
     /// LinkUnitFiles method
@@ -218,7 +273,15 @@ pub trait Manager {
         force: bool,
     ) -> zbus::Result<Vec<(String, String, String)>>;
 
-    /// ListJobs method
+    /// # ListJobs()
+    /// ## METHOD
+    /// Returns an array with all currently queued jobs. Returns an array consisting of structures with the following elements:
+    ///    •   The numeric job id
+    ///    •   The primary unit name for this job
+    ///    •   The job type as string
+    ///    •   The job state as string
+    ///    •   The job object path
+    ///    •   The unit object path
     fn list_jobs(
         &self,
     ) -> zbus::Result<
@@ -232,7 +295,11 @@ pub trait Manager {
         )>,
     >;
 
-    /// ListUnitFiles method
+    /// # ListUnitFiles()
+    /// ## METHOD
+    /// Returns an array of unit names and their enablement status. Note that ListUnit() returns a list of units currently loaded into memory, while ListUnitFiles() returns a list of unit
+    /// files that were found on disk. Note that while most units are read directly from a unit file with the same name, some units are not backed by files and some files (templates) cannot directly be loaded
+    /// as units but need to be instantiated instead.
     fn list_unit_files(&self) -> zbus::Result<Vec<(String, String)>>;
 
     /// ListUnitFilesByPatterns method
@@ -242,20 +309,41 @@ pub trait Manager {
         patterns: &[&str],
     ) -> zbus::Result<Vec<(String, String)>>;
 
-    /// ListUnits method
+    /// # ListUnits()
+    /// ## METHOD
+    /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them. The array consists of
+    /// structures with the following elements:
+    ///    •   The human readable description string
+    ///    •   The load state (i.e. whether the unit file has been loaded successfully)
+    ///    •   The active state (i.e. whether the unit is currently started or not)
+    ///    •   The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
+    ///    •   A unit that is being followed in its state by this unit, if there is any, otherwise the empty string.
+    ///    •   The unit object path
+    ///    •   If there is a job queued for the job unit, the numeric job id, 0 otherwise
+    ///    •   The job type as string
+    ///    •   The job object path
     fn list_units(
         &self,
     ) -> zbus::Result<
         Vec<(
+            // The primary unit name as string
             String,
+            // The load state (i.e. whether the unit file has been loaded successfully)
             String,
+            // The active state (i.e. whether the unit is currently started or not)
             String,
+            // The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
             String,
+            // A unit that is being followed in its state by this unit, if there is any, otherwise the empty string.
             String,
+            // The unit object path
             String,
             zbus::zvariant::OwnedObjectPath,
+            // If there is a job queued for the job unit, the numeric job id, 0 otherwise
             u32,
+            // The job type as string
             String,
+            // The job object path
             zbus::zvariant::OwnedObjectPath,
         )>,
     >;
@@ -318,7 +406,9 @@ pub trait Manager {
         )>,
     >;
 
-    /// LoadUnit method
+    /// # LoadUnit()
+    /// ## METHOD
+    /// Similar to GetUnit() but will load the unit from disk if possible.
     fn load_unit(&self, name: &str) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
     /// LookupDynamicUserByName method
@@ -336,7 +426,9 @@ pub trait Manager {
         force: bool,
     ) -> zbus::Result<Vec<(String, String, String)>>;
 
-    /// MountImageUnit method
+    /// # MountImageUnit()
+    /// ## METHOD
+    /// Can be used to mount new images into a running service mount namespace.
     fn mount_image_unit(
         &self,
         name: &str,
@@ -375,7 +467,11 @@ pub trait Manager {
         force: bool,
     ) -> zbus::Result<(bool, Vec<(String, String, String)>)>;
 
-    /// Reboot method
+    /// # Reboot()
+    /// ## METHOD
+    /// Reboot(), PowerOff(), Halt(), or KExec() may be used to ask for immediate reboot, powering down, halt or kexec based reboot of the system. Note that this does not shut down any services and immediately transitions into the
+    /// reboot process. These functions are normally only called as the last step of shutdown and should not be called directly. To shut down the machine, it is generally a better idea to invoke Reboot() or PowerOff() on the
+    /// systemd-logind manager object; see org.freedesktop.login1(5) for more information.
     fn reboot(&self) -> zbus::Result<()>;
 
     /// ReenableUnitFiles method
@@ -386,13 +482,17 @@ pub trait Manager {
         force: bool,
     ) -> zbus::Result<(bool, Vec<(String, String, String)>)>;
 
-    /// Reexecute method
+    /// # Reexecute()
+    /// ## METHOD
+    /// May be invoked to reexecute the main manager process. It will serialize its state, reexecute, and deserizalize the state again. This is useful for upgrades and is a more comprehensive version of Reload().
     fn reexecute(&self) -> zbus::Result<()>;
 
     /// RefUnit method
     fn ref_unit(&self, name: &str) -> zbus::Result<()>;
 
-    /// Reload method
+    /// # Reload()
+    /// ## METHOD
+    /// May be invoked to reload all unit files.
     fn reload(&self) -> zbus::Result<()>;
 
     /// ReloadOrRestartUnit method
@@ -409,13 +509,21 @@ pub trait Manager {
         mode: &str,
     ) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
-    /// ReloadUnit method
+    /// # ReloadUnit()
+    /// ## METHOD
+    /// ReloadUnit(), RestartUnit(), TryRestartUnit(), ReloadOrRestartUnit(), or ReloadOrTryRestartUnit() may be used to restart and/or reload a unit. These methods take similar arguments as StartUnit(). Reloading is done only if the
+    /// unit is already running and fails otherwise. If a service is restarted that isn't running, it will be started unless the "Try" flavor is used in which case a service that isn't running is not affected by the restart. The
+    /// "ReloadOrRestart" flavors attempt a reload if the unit supports it and use a restart otherwise.
     fn reload_unit(&self, name: &str, mode: &str) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
-    /// ResetFailed method
+    /// # ResetFailed()
+    /// ## METHOD
+    /// Resets the "failed" state of all units.
     fn reset_failed(&self) -> zbus::Result<()>;
 
-    /// ResetFailedUnit method
+    /// # ResetFailedUnit()
+    /// ## METHOD
+    /// Resets the "failed" state of a specific unit.
     fn reset_failed_unit(&self, name: &str) -> zbus::Result<()>;
 
     /// RestartUnit method
@@ -425,14 +533,18 @@ pub trait Manager {
     /// RevertUnitFiles method
     fn revert_unit_files(&self, files: &[&str]) -> zbus::Result<Vec<(String, String, String)>>;
 
-    /// SetDefaultTarget method
+    /// # SetDefaultTarget()
+    /// ## METHOD
+    /// Changes the default.target link. See bootup(7) for more information.
     fn set_default_target(
         &self,
         name: &str,
         force: bool,
     ) -> zbus::Result<Vec<(String, String, String)>>;
 
-    /// SetEnvironment method
+    /// # SetEnvironment()
+    /// ## METHOD
+    /// May be used to alter the environment block that is passed to all spawned processes. It takes a string array of environment variable assignments. Any previously set environment variables will be overridden.
     fn set_environment(&self, assignments: &[&str]) -> zbus::Result<()>;
 
     /// SetExitCode method
@@ -441,7 +553,16 @@ pub trait Manager {
     /// SetShowStatus method
     fn set_show_status(&self, mode: &str) -> zbus::Result<()>;
 
-    /// SetUnitProperties method
+    /// # SetUnitProperties()
+    /// ## METHOD
+    /// May be used to modify certain unit properties at runtime. Not all properties may be changed at runtime, but many resource management settings (primarily those listed in
+    /// systemd.resource-control(5)) may. The changes are applied instantly and stored on disk for future boots, unless runtime is true, in which case the settings only apply until the next reboot.  name is
+    /// the name of the unit to modify.  properties are the settings to set, encoded as an array of property name and value pairs. Note that this is not a dictionary! Also note that when setting array
+    /// properties with this method usually results in appending to the pre-configured array. To reset the configured arrays, set the property to an empty array first and then append to it.
+    ///
+    /// StartTransientUnit() may be used to create and start a transient unit which will be released as soon as it is not running or referenced anymore or the system is rebooted.  name is the unit name
+    /// including its suffix and must be unique.  mode is the same as in StartUnit(), properties contains properties of the unit, specified like in SetUnitProperties().  aux is currently unused and should be
+    /// passed as an empty array. See the New Control Group Interface[2] for more information how to make use of this functionality for resource control purposes.
     fn set_unit_properties(
         &self,
         name: &str,
@@ -449,7 +570,11 @@ pub trait Manager {
         properties: &[&(&str, &zbus::zvariant::Value<'_>)],
     ) -> zbus::Result<()>;
 
-    /// StartTransientUnit method
+    /// # StartTransientUnit()
+    /// ## METHOD
+    /// May be used to create and start a transient unit which will be released as soon as it is not running or referenced anymore or the system is rebooted.  name is the unit name
+    /// including its suffix and must be unique.  mode is the same as in StartUnit(), properties contains properties of the unit, specified like in SetUnitProperties().  aux is currently unused and should be
+    /// passed as an empty array. See the New Control Group Interface[2] for more information how to make use of this functionality for resource control purposes.
     #[allow(clippy::type_complexity)]
     fn start_transient_unit(
         &self,
@@ -459,10 +584,23 @@ pub trait Manager {
         aux: &[&(&str, &[&(&str, &zbus::zvariant::Value<'_>)])],
     ) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
-    /// StartUnit method
+    /// # StartUnit()
+    /// ## METHOD
+    /// Enqueues a start job and possibly depending jobs. It takes the unit to activate and a mode
+    /// string as arguments. The mode needs to be one of "replace", "fail", "isolate", "ignore-dependencies", or
+    /// "ignore-requirements". If "replace", the method will start the unit and its dependencies, possibly
+    /// replacing already queued jobs that conflict with it. If "fail", the method will start the unit and its
+    /// dependencies, but will fail if this would change an already queued job. If "isolate", the method will
+    /// start the unit in question and terminate all units that aren't dependencies of it. If
+    /// "ignore-dependencies", it will start a unit but ignore all its dependencies. If "ignore-requirements",
+    /// it will start a unit but only ignore the requirement dependencies. It is not recommended to make use of
+    /// the latter two options. On completion, this method returns the newly created job object.
     fn start_unit(&self, name: &str, mode: &str) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
-    /// StartUnitReplace method
+    /// # StartUnitReplace()
+    /// ## METHOD
+    /// Similar to StartUnit() but replaces a job that is queued for one unit by a job for
+    /// another unit.
     fn start_unit_replace(
         &self,
         old_unit: &str,
@@ -470,13 +608,24 @@ pub trait Manager {
         mode: &str,
     ) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
-    /// StopUnit method
+    /// # StopUnit()
+    /// ## METHOD
+    /// Similar to StartUnit() but stops the specified unit rather than starting it. Note that the
+    /// "isolate" mode is invalid for this method.
     fn stop_unit(&self, name: &str, mode: &str) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
-    /// Subscribe method
+    /// # Subscribe()
+    /// ## METHOD
+    /// Enables most bus signals to be sent out. Clients which are interested in signals need to call this method. Signals are only sent out if at least one client invoked this method.  Unsubscribe() reverts the signal
+    /// subscription that Subscribe() implements. It is not necessary to invoke Unsubscribe() as clients are tracked. Signals are no longer sent out as soon as all clients which previously asked for Subscribe() either closed their
+    /// connection to the bus or invoked Unsubscribe().
     fn subscribe(&self) -> zbus::Result<()>;
 
-    /// SwitchRoot method
+    /// # SwitchRoot()
+    /// ## METHOD
+    /// May be used to transition to a new root directory. This is intended to be used by initial RAM disks. The method takes two arguments: the new root directory (which needs to be specified) and an init binary path
+    /// (which may be left empty, in which case it is automatically searched for). The state of the system manager will be serialized before the transition. After the transition, the manager binary on the main system is invoked and
+    /// replaces the old PID 1. All state will then be deserialized.
     fn switch_root(&self, new_root: &str, init: &str) -> zbus::Result<()>;
 
     /// ThawUnit method
@@ -499,21 +648,39 @@ pub trait Manager {
     /// UnrefUnit method
     fn unref_unit(&self, name: &str) -> zbus::Result<()>;
 
-    /// UnsetAndSetEnvironment method
+    /// # UnsetAndSetEnvironment()
+    /// ## METHOD
+    /// Is a combination of UnsetEnvironment() and SetEnvironment(). It takes two lists. The first list contains variables to unset, the second one contains assignments to set. If a variable is listed in both,
+    /// the variable is set after this method returns, i.e. the set list overrides the unset list.
     fn unset_and_set_environment(&self, names: &[&str], assignments: &[&str]) -> zbus::Result<()>;
 
-    /// UnsetEnvironment method
+    /// # UnsetEnvironment()
+    /// ## METHOD
+    /// May be used to unset environment variables. It takes a string array of environment variable names. All variables specified will be unset (if they have been set previously) and no longer be passed to all
+    /// spawned processes. This method has no effect for variables that were previously not set, but will not fail in that case.
     fn unset_environment(&self, names: &[&str]) -> zbus::Result<()>;
 
     /// Unsubscribe method
     fn unsubscribe(&self) -> zbus::Result<()>;
 
-    /// JobNew signal
+    /// # JobNew
+    /// ## SIGNAL
+    /// JobNew() and JobRemoved() are sent out each time a new job is queued or dequeued. Both signals take the numeric job ID, the bus path and the primary unit name for this job as arguments.  JobRemoved()
+    /// also includes a result string which is one of "done", "canceled", "timeout", "failed", "dependency", or "skipped".  "done" indicates successful execution of a job.  "canceled" indicates that a job has
+    /// been canceled (via CancelJob() above) before it finished execution (this doesn't necessarily mean though that the job operation is actually cancelled too, see above).  "timeout" indicates that the job
+    /// timeout was reached.  "failed" indicates that the job failed.  "dependency" indicates that a job this job depended on failed and the job hence was removed as well.  "skipped" indicates that a job was
+    /// skipped because it didn't apply to the unit's current state.
     #[zbus(signal)]
     fn job_new(&self, id: u32, job: zbus::zvariant::ObjectPath<'_>, unit: &str)
         -> zbus::Result<()>;
 
-    /// JobRemoved signal
+    /// # JobRemoved
+    /// ## SIGNAL
+    /// JobNew() and JobRemoved() are sent out each time a new job is queued or dequeued. Both signals take the numeric job ID, the bus path and the primary unit name for this job as arguments.  JobRemoved()
+    /// also includes a result string which is one of "done", "canceled", "timeout", "failed", "dependency", or "skipped".  "done" indicates successful execution of a job.  "canceled" indicates that a job has
+    /// been canceled (via CancelJob() above) before it finished execution (this doesn't necessarily mean though that the job operation is actually cancelled too, see above).  "timeout" indicates that the job
+    /// timeout was reached.  "failed" indicates that the job failed.  "dependency" indicates that a job this job depended on failed and the job hence was removed as well.  "skipped" indicates that a job was
+    /// skipped because it didn't apply to the unit's current state.
     #[zbus(signal)]
     fn job_removed(
         &self,
@@ -523,11 +690,18 @@ pub trait Manager {
         result: &str,
     ) -> zbus::Result<()>;
 
-    /// Reloading signal
+    /// # Reloading
+    /// ## SIGNAL
+    /// Sent out immediately before a daemon reload is done (with the boolean parameter set to True) and after a daemon reload is completed (with the boolean parameter set to False). This may
+    /// be used by UIs to optimize UI updates.
     #[zbus(signal)]
     fn reloading(&self, active: bool) -> zbus::Result<()>;
 
-    /// StartupFinished signal
+    /// # StartupFinished
+    /// ## SIGNAL
+    /// Sent out when startup finishes. It carries six microsecond timespan values, each indicating how much boot time has been spent in the firmware (if known), in the boot loader (if
+    /// known), in the kernel initialization phase, in the initrd (if known), in userspace and in total. These values may also be calculated from the FirmwareTimestampMonotonic, LoaderTimestampMonotonic,
+    /// InitRDTimestampMonotonic, UserspaceTimestampMonotonic, and FinishTimestampMonotonic properties (see below).
     #[zbus(signal)]
     fn startup_finished(
         &self,
@@ -539,15 +713,23 @@ pub trait Manager {
         total: u64,
     ) -> zbus::Result<()>;
 
-    /// UnitFilesChanged signal
+    /// # UnitFilesChanged
+    /// ## SIGNAL
+    /// Sent out each time the list of enabled or masked unit files on disk have changed.
     #[zbus(signal)]
     fn unit_files_changed(&self) -> zbus::Result<()>;
 
-    /// UnitNew signal
+    /// # UnitNew
+    /// ## SIGNAL
+    /// UnitNew() and UnitRemoved() are sent out each time a new unit is loaded or unloaded. Note that this has little to do with whether a unit is available on disk or not, and simply reflects the units that
+    /// are currently loaded into memory. The signals take two parameters: the primary unit name and the object path.
     #[zbus(signal)]
     fn unit_new(&self, id: &str, unit: zbus::zvariant::ObjectPath<'_>) -> zbus::Result<()>;
 
-    /// UnitRemoved signal
+    /// # UnitRemoved
+    /// ## SIGNAL
+    /// UnitNew() and UnitRemoved() are sent out each time a new unit is loaded or unloaded. Note that this has little to do with whether a unit is available on disk or not, and simply reflects the units that
+    /// are currently loaded into memory. The signals take two parameters: the primary unit name and the object path.
     #[zbus(signal)]
     fn unit_removed(&self, id: &str, unit: zbus::zvariant::ObjectPath<'_>) -> zbus::Result<()>;
 
