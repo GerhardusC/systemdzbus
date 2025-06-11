@@ -1,6 +1,36 @@
-use zbus::zvariant::OwnedObjectPath;
+use zbus::{zvariant::OwnedObjectPath, Connection, blocking::Connection as ConnectionBlocking};
+
+use crate::errors::SystemdError;
+
 
 pub mod unit_commands;
+
+pub enum ConnectionLevel {
+    /// Create a Connection to the session/user message bus.
+    UserLevel,
+    /// Create a Connection to the system-wide message bus.
+    SystemLevel,
+}
+
+impl ConnectionLevel {
+    async fn get_connection(&self) -> Result<Connection, SystemdError> {
+        let connection = match self {
+            ConnectionLevel::UserLevel => Connection::session().await?,
+            ConnectionLevel::SystemLevel => Connection::system().await?,
+        };
+
+        Ok(connection)
+    }
+
+    fn get_blocking_connection(&self) -> Result<ConnectionBlocking, SystemdError> {
+        let connection = match self {
+            ConnectionLevel::UserLevel => ConnectionBlocking::session()?,
+            ConnectionLevel::SystemLevel => ConnectionBlocking::system()?,
+        };
+
+        Ok(connection)
+    }
+}
 
 pub enum UnitLoadState {
     // stub

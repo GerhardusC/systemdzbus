@@ -1,33 +1,6 @@
-use zbus::{Connection, blocking::Connection as ConnectionBlocking};
+use crate::systemctl::ConnectionLevel;
 use crate::{errors::SystemdError, systemctl::Unit};
 use crate::manager::{ManagerProxyBlocking, ManagerProxy};
-
-pub enum ConnectionLevel {
-    /// Create a Connection to the session/user message bus.
-    UserLevel,
-    /// Create a Connection to the system-wide message bus.
-    SystemLevel,
-}
-
-impl ConnectionLevel {
-    async fn get_connection(&self) -> Result<Connection, SystemdError> {
-        let connection = match self {
-            ConnectionLevel::UserLevel => Connection::session().await?,
-            ConnectionLevel::SystemLevel => Connection::system().await?,
-        };
-
-        Ok(connection)
-    }
-
-    fn get_blocking_connection(&self) -> Result<ConnectionBlocking, SystemdError> {
-        let connection = match self {
-            ConnectionLevel::UserLevel => ConnectionBlocking::session()?,
-            ConnectionLevel::SystemLevel => ConnectionBlocking::system()?,
-        };
-
-        Ok(connection)
-    }
-}
 
 /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
 pub async fn list_units(level: ConnectionLevel) -> Result<Vec<Unit>, SystemdError> {
