@@ -6,8 +6,8 @@ use crate::manager::{ManagerProxyBlocking, ManagerProxy};
 pub async fn list_units() -> Result<Vec<Unit>, SystemdError> {
     let connection = Connection::system().await?;
     let proxy = ManagerProxy::new(&connection).await?;
-    let units = proxy.list_units().await?.iter().map(|item| {
-        item.to_owned().into()
+    let units = proxy.list_units().await?.into_iter().map(|item| {
+        item.into()
     }).collect();
     Ok(units)
 }
@@ -16,8 +16,8 @@ pub async fn list_units() -> Result<Vec<Unit>, SystemdError> {
 pub fn list_units_blocking() -> Result<Vec<Unit>, SystemdError> {
     let connection = ConnectionBlocking::system()?;
     let proxy = ManagerProxyBlocking::new(&connection)?;
-    let units = proxy.list_units()?.iter().map(|item| {
-        item.to_owned().into()
+    let units = proxy.list_units()?.into_iter().map(|item| {
+        item.into()
     }).collect();
     Ok(units)
 }
