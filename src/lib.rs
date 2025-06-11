@@ -10,9 +10,10 @@
 //!To find out more about how to use the Connection, see the [zbus library](https://docs.rs/zbus/latest/zbus/).
 //!
 //!```rust
+//!    use std::error::Error;
 //!    use systemdzbus::{Connection, manager::ManagerProxy};
 //!
-//!    async fn example_get_units() -> Result<()> {
+//!    async fn example_get_units() -> Result<(), Box::<dyn Error>> {
 //!       /// Create zbus connection. You can also use Connection::session() here.
 //!       let connection = Connection::system().await?;
 //!
@@ -53,16 +54,16 @@
 //! [D-Bus standard interfaces]: https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces,
 
 pub mod manager;
-
+pub mod systemctl;
+pub mod errors;
 pub use manager::ManagerProxy;
 pub use zbus::Connection;
-
 
 #[cfg(test)]
 mod tests {
     use std::error::Error;
     use zbus::Connection;
-    use crate::manager::ManagerProxy;
+    use crate::{manager::ManagerProxy};
 
     #[test]
     fn can_list_units() {

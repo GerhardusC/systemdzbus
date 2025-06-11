@@ -110,9 +110,9 @@ pub trait Manager {
     ///
     /// The EnableUnitFilesWithFlags() and DisableUnitFilesWithFlags() take in options as flags instead of booleans to allow for extendability, defined as follows:
     ///
-    ///     #define SD_SYSTEMD_UNIT_RUNTIME  (UINT64_C(1) << 0)
-    ///     #define SD_SYSTEMD_UNIT_FORCE    (UINT64_C(1) << 1)
-    ///     #define SD_SYSTEMD_UNIT_PORTABLE (UINT64_C(1) << 2)
+    //[     #define SD_SYSTEMD_UNIT_RUNTIME  (UINT64_C(1) << 0)
+    //[     #define SD_SYSTEMD_UNIT_FORCE    (UINT64_C(1) << 1)
+    //[     #define SD_SYSTEMD_UNIT_PORTABLE (UINT64_C(1) << 2)
     ///
     /// SD_SYSTEMD_UNIT_RUNTIME will enable or disable the unit for runtime only, SD_SYSTEMD_UNIT_FORCE controls whether symlinks pointing to other units shall be replaced if necessary.
     /// SD_SYSTEMD_UNIT_PORTABLE will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.
@@ -340,6 +340,8 @@ pub trait Manager {
         Vec<(
             // The primary unit name as string
             String,
+            // The human readable description string
+            String,
             // The load state (i.e. whether the unit file has been loaded successfully)
             String,
             // The active state (i.e. whether the unit is currently started or not)
@@ -349,7 +351,6 @@ pub trait Manager {
             // A unit that is being followed in its state by this unit, if there is any, otherwise the empty string.
             String,
             // The unit object path
-            String,
             zbus::zvariant::OwnedObjectPath,
             // If there is a job queued for the job unit, the numeric job id, 0 otherwise
             u32,
