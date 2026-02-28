@@ -15,7 +15,7 @@ impl<'a> SystemCtl<'a> {
     pub fn new(connection_level: ConnectionLevel) -> Self {
         SystemCtl {
             manager_proxy: None,
-            connection_level: connection_level,
+            connection_level,
         }
     }
 

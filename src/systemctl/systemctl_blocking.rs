@@ -15,7 +15,7 @@ impl<'a> SystemCtlBlocking<'a> {
     pub fn new(connection_level: ConnectionLevel) -> Self {
         SystemCtlBlocking {
             manager_proxy: None,
-            connection_level: connection_level,
+            connection_level,
         }
     }
 

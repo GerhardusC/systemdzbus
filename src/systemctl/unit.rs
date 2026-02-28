@@ -114,7 +114,11 @@ impl
             load_state: value.2.into(),
             active_state: value.3.into(),
             sub_state: value.4,
-            followed_unit: if value.5 == "" { None } else { Some(value.5) },
+            followed_unit: if value.5.is_empty() {
+                None
+            } else {
+                Some(value.5)
+            },
             object_path: value.6,
             queued_job_id: if value.7 == 0 { None } else { Some(value.7) },
             job_type: value.8,

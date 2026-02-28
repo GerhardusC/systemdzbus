@@ -125,6 +125,7 @@ pub trait Manager {
     /// Similarly, PresetUnitFiles() enables/disables one or more unit files according to the preset policy. See systemd.preset(7) for more information.
     ///
     /// Similarly, MaskUnitFiles() masks unit files and UnmaskUnitFiles() unmasks them again.
+    #[allow(clippy::type_complexity)]
     fn enable_unit_files(
         &self,
         files: &[&str],
@@ -142,6 +143,7 @@ pub trait Manager {
     ///
     /// SD_SYSTEMD_UNIT_RUNTIME will enable or disable the unit for runtime only, SD_SYSTEMD_UNIT_FORCE controls whether symlinks pointing to other units shall be replaced
     /// if necessary.  SD_SYSTEMD_UNIT_PORTABLE will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.
+    #[allow(clippy::type_complexity)]
     fn enable_unit_files_with_flags(
         &self,
         files: &[&str],
@@ -155,6 +157,7 @@ pub trait Manager {
 
     /// EnqueueUnitJob method
     #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::type_complexity)]
     fn enqueue_unit_job(
         &self,
         name: &str,
@@ -197,6 +200,7 @@ pub trait Manager {
     fn get_job(&self, id: u32) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
     /// GetJobAfter method
+    #[allow(clippy::type_complexity)]
     fn get_job_after(
         &self,
         id: u32,
@@ -212,6 +216,7 @@ pub trait Manager {
     >;
 
     /// GetJobBefore method
+    #[allow(clippy::type_complexity)]
     fn get_job_before(
         &self,
         id: u32,
@@ -294,6 +299,7 @@ pub trait Manager {
     ///    •   The job state as string
     ///    •   The job object path
     ///    •   The unit object path
+    #[allow(clippy::type_complexity)]
     fn list_jobs(
         &self,
     ) -> zbus::Result<
@@ -334,6 +340,7 @@ pub trait Manager {
     ///    •   If there is a job queued for the job unit, the numeric job id, 0 otherwise
     ///    •   The job type as string
     ///    •   The job object path
+    #[allow(clippy::type_complexity)]
     fn list_units(
         &self,
     ) -> zbus::Result<
@@ -362,6 +369,7 @@ pub trait Manager {
     >;
 
     /// ListUnitsByNames method
+    #[allow(clippy::type_complexity)]
     fn list_units_by_names(
         &self,
         names: &[&str],
@@ -381,6 +389,7 @@ pub trait Manager {
     >;
 
     /// ListUnitsByPatterns method
+    #[allow(clippy::type_complexity)]
     fn list_units_by_patterns(
         &self,
         states: &[&str],
@@ -401,6 +410,7 @@ pub trait Manager {
     >;
 
     /// ListUnitsFiltered method
+    #[allow(clippy::type_complexity)]
     fn list_units_filtered(
         &self,
         states: &[&str],
@@ -464,6 +474,7 @@ pub trait Manager {
     ) -> zbus::Result<Vec<(String, String, String)>>;
 
     /// PresetUnitFiles method
+    #[allow(clippy::type_complexity)]
     fn preset_unit_files(
         &self,
         files: &[&str],
@@ -472,6 +483,7 @@ pub trait Manager {
     ) -> zbus::Result<(bool, Vec<(String, String, String)>)>;
 
     /// PresetUnitFilesWithMode method
+    #[allow(clippy::type_complexity)]
     fn preset_unit_files_with_mode(
         &self,
         files: &[&str],
@@ -488,6 +500,7 @@ pub trait Manager {
     fn reboot(&self) -> zbus::Result<()>;
 
     /// ReenableUnitFiles method
+    #[allow(clippy::type_complexity)]
     fn reenable_unit_files(
         &self,
         files: &[&str],
