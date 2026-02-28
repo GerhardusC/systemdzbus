@@ -1,3 +1,5 @@
+use zbus::blocking::Connection;
+
 use crate::{
     errors::SystemdError,
     manager::ManagerProxyBlocking,
@@ -16,6 +18,14 @@ impl<'a> SystemCtlBlocking<'a> {
             connection_level: connection_level,
         }
     }
+
+    pub fn init(&mut self) -> Result<(), SystemdError> {
+        let connection = self.connection_level.get_connection_blocking()?;
+        let proxy = ManagerProxyBlocking::new(&connection)?;
+        self.manager_proxy = Some(proxy);
+        Ok(())
+    }
+
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
         let Some(proxy) = &self.manager_proxy else {
@@ -24,12 +34,16 @@ impl<'a> SystemCtlBlocking<'a> {
         let units = proxy.list_units()?;
         Ok(units.into_iter().map(Into::into).collect())
     }
+}
 
-    pub fn init(&mut self) -> Result<(), SystemdError> {
-        let connection = self.connection_level.get_connection_blocking()?;
-        let proxy = ManagerProxyBlocking::new(&connection)?;
-        self.manager_proxy = Some(proxy);
-        Ok(())
+impl ConnectionLevel {
+    fn get_connection_blocking(&self) -> Result<Connection, SystemdError> {
+        let connection = match self {
+            ConnectionLevel::UserLevel => Connection::session()?,
+            ConnectionLevel::SystemLevel => Connection::system()?,
+        };
+
+        Ok(connection)
     }
 }
 

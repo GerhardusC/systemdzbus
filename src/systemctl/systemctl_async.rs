@@ -1,3 +1,5 @@
+use zbus::Connection;
+
 use crate::{
     ManagerProxy,
     errors::SystemdError,
@@ -16,6 +18,14 @@ impl<'a> SystemCtl<'a> {
             connection_level: connection_level,
         }
     }
+
+    pub async fn init(&mut self) -> Result<(), SystemdError> {
+        let connection = self.connection_level.get_connection().await?;
+        let proxy = ManagerProxy::new(&connection).await?;
+        self.manager_proxy = Some(proxy);
+        Ok(())
+    }
+
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub async fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
         let Some(proxy) = &self.manager_proxy else {
@@ -24,12 +34,16 @@ impl<'a> SystemCtl<'a> {
         let units = proxy.list_units().await?;
         Ok(units.into_iter().map(Into::into).collect())
     }
+}
 
-    pub async fn init(&mut self) -> Result<(), SystemdError> {
-        let connection = self.connection_level.get_connection().await?;
-        let proxy = ManagerProxy::new(&connection).await?;
-        self.manager_proxy = Some(proxy);
-        Ok(())
+impl ConnectionLevel {
+    async fn get_connection(&self) -> Result<Connection, SystemdError> {
+        let connection = match self {
+            ConnectionLevel::UserLevel => Connection::session().await?,
+            ConnectionLevel::SystemLevel => Connection::system().await?,
+        };
+
+        Ok(connection)
     }
 }
 
