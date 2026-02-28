@@ -26,6 +26,10 @@ impl<'a> SystemCtlBlocking<'a> {
         Ok(())
     }
 
+    /// Get access to the manager proxy directly. This allows you to call all the functions defined
+    /// and documented in the ManagerProxy type, which is basically everything in
+    /// org.freedesktop.systemd1.Manager. Here you will only get strings and numbers with no
+    /// meaning attached to them, hopefully in future this will not be a required method.
     pub fn get_manager_proxy(&self) -> Result<&ManagerProxyBlocking<'a>, SystemdError> {
         self.manager_proxy
             .as_ref()
