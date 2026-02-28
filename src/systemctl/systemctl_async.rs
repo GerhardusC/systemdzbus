@@ -3,7 +3,7 @@ use zbus::Connection;
 use crate::{
     ManagerProxy,
     errors::SystemdError,
-    systemctl::{connection_level::ConnectionLevel, unit::Unit},
+    systemctl::{connection_level::ConnectionLevel, unit::Unit, unit_file::UnitFile},
 };
 
 pub struct SystemCtl<'a> {
@@ -26,6 +26,12 @@ impl<'a> SystemCtl<'a> {
         Ok(())
     }
 
+    pub async fn get_manager_proxy(&self) -> Result<&ManagerProxy<'a>, SystemdError> {
+        self.manager_proxy
+            .as_ref()
+            .ok_or(SystemdError::InitialisationError)
+    }
+
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub async fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
         let Some(proxy) = &self.manager_proxy else {
@@ -33,6 +39,18 @@ impl<'a> SystemCtl<'a> {
         };
         let units = proxy.list_units().await?;
         Ok(units.into_iter().map(Into::into).collect())
+    }
+
+    /// Returns an array of unit names and their enablement status. Note that ListUnit() returns a list of units currently loaded into memory, while ListUnitFiles() returns a list of unit
+    /// files that were found on disk. Note that while most units are read directly from a unit file with the same name, some units are not backed by files and some files (templates) cannot directly be loaded
+    /// as units but need to be instantiated instead.
+    pub async fn list_unit_files(&self) -> Result<Vec<UnitFile>, SystemdError> {
+        let Some(proxy) = &self.manager_proxy else {
+            return Err(SystemdError::InitialisationError);
+        };
+
+        let unit_files = proxy.list_unit_files().await?;
+        Ok(unit_files.into_iter().map(Into::into).collect())
     }
 }
 
@@ -52,6 +70,48 @@ mod tests {
     use super::*;
 
     #[test]
+    fn can_list_unit_files() {
+        smol::block_on(async {
+            let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
+
+            system_ctl
+                .init()
+                .await
+                .expect("Should be able to init connection");
+
+            let unit_files = system_ctl.list_unit_files().await;
+
+            assert!(unit_files.is_ok());
+
+            let unit_files = unit_files.expect("Unit files should exist at this point");
+
+            assert!(!unit_files.is_empty())
+        })
+    }
+
+    #[test]
+    fn can_use_manager_proxy_directly() {
+        smol::block_on(async {
+            let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
+
+            system_ctl
+                .init()
+                .await
+                .expect("Should be able to init connection");
+
+            let proxy = system_ctl
+                .get_manager_proxy()
+                .await
+                .expect("Initialised at this point");
+
+            let state = proxy.get_unit_file_state("dbus.service").await;
+            dbg!(&state);
+
+            assert!(state.is_ok());
+        });
+    }
+
+    #[test]
     fn can_list_units() {
         smol::block_on(async {
             let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
@@ -67,7 +127,7 @@ mod tests {
 
             let units = units.expect("Units are OK by now");
 
-            assert!(units.len() > 0);
+            assert!(!units.is_empty());
         });
     }
 }
