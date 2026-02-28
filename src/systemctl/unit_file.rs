@@ -5,7 +5,7 @@ pub struct UnitFile {
     pub enablement_status: EnablementStatus,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum EnablementStatus {
     Alias,
     Disabled,
