@@ -16,6 +16,9 @@ keywords = ["dbus", "zbus", "systemd", "systemctl"]
 readme = "./README.md"
 
 [dependencies]
-smol = "2.0.2" # This dep is just for running tests.
 thiserror = "2.0.12"
 zbus = "5.7.1"
+
+[dev-dependencies]
+smol = "2.0.2" # This dep is just for running tests.
+
