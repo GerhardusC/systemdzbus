@@ -1,23 +1,17 @@
 use zbus::zvariant::OwnedObjectPath;
 
+// NOTE: These docs are all from the man page of org.freedesktop.systemd1
+
 #[derive(Debug)]
 pub enum UnitLoadState {
-    // stub
     Stub,
-    // loaded
     Loaded,
-    // not-found
     NotLoaded,
-    // bad-setting
     BadSetting,
-    // error
     Error,
-    // merged
     Merged,
-    // masked
     Masked,
-    // This shouldn't happen
-    Invalid,
+    Other(String),
 }
 
 impl From<String> for UnitLoadState {
@@ -30,29 +24,21 @@ impl From<String> for UnitLoadState {
             "error" => UnitLoadState::Error,
             "merged" => UnitLoadState::Merged,
             "masked" => UnitLoadState::Masked,
-            _ => UnitLoadState::Invalid,
+            _ => UnitLoadState::Other(value),
         }
     }
 }
 
 #[derive(Debug)]
 pub enum UnitActiveState {
-    // active
     Active,
-    // reloading
     Reloading,
-    // inactive
     Inactive,
-    // failed
     Failed,
-    // activating
     Activating,
-    // deactivating
     Deactivating,
-    // maintenance
     Maintenance,
-    // This shouldn't happen
-    Invalid,
+    Other(String),
 }
 
 impl From<String> for UnitActiveState {
@@ -65,7 +51,7 @@ impl From<String> for UnitActiveState {
             "activating" => UnitActiveState::Activating,
             "deactivating" => UnitActiveState::Deactivating,
             "maintenance" => UnitActiveState::Maintenance,
-            _ => UnitActiveState::Invalid,
+            _ => UnitActiveState::Other(value),
         }
     }
 }

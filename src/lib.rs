@@ -7,13 +7,30 @@
 //!
 //!## Usage
 //!
+//!```rust
+//!    use std::error::Error;
+//!    use systemdzbus::{SystemCtl, ConnectionLevel};
+//!
+//!     async fn example_get_units_higher_level() -> Result<(), Box::<dyn Error>> {
+//!       let mut systemctl = SystemCtl::new(ConnectionLevel::UserLevel);
+//!       systemctl.init().await?;
+//!
+//!       let units = systemctl.list_units().await?;
+//!
+//!       assert!(!units.is_empty());
+//!       Ok(())
+//!   }
+//!```
+//!
+//!You may also access the manager proxy directly if managing the connection yourself suits your
+//!needs better.
 //!To find out more about how to use the Connection, see the [zbus library](https://docs.rs/zbus/latest/zbus/).
 //!
 //!```rust
 //!    use std::error::Error;
-//!    use systemdzbus::{Connection, manager::ManagerProxy};
+//!    use systemdzbus::{ManagerProxy, Connection, SystemCtl, ConnectionLevel};
 //!
-//!    async fn example_get_units() -> Result<(), Box::<dyn Error>> {
+//!    async fn example_get_units_manager_proxy() -> Result<(), Box::<dyn Error>> {
 //!       /// Create zbus connection. You can also use Connection::session() here.
 //!       let connection = Connection::system().await?;
 //!
@@ -24,7 +41,10 @@
 //!       /// that are actually documented here
 //!       let res = proxy.list_units().await?;
 //!
-//!       assert!(res.len() > 0);
+//!       assert!(!res.is_empty());
+//!
+//!       /// Or you can still have your connection managed.
+//!       let mut systemctl = SystemCtl::new(ConnectionLevel::UserLevel);
 //!
 //!       Ok(())
 //!   }
@@ -57,13 +77,31 @@ pub mod errors;
 pub mod manager;
 pub mod systemctl;
 pub use manager::ManagerProxy;
+pub use systemctl::connection_level::ConnectionLevel;
+pub use systemctl::systemctl_async::SystemCtl;
+pub use systemctl::systemctl_blocking::SystemCtlBlocking;
 pub use zbus::Connection;
 
 #[cfg(test)]
 mod tests {
-    use crate::manager::ManagerProxy;
+    use super::*;
     use std::error::Error;
-    use zbus::Connection;
+
+    #[test]
+    fn can_list_units_with_higher_level_interface_blocking() {
+        let mut systemctl = SystemCtlBlocking::new(ConnectionLevel::UserLevel);
+        systemctl
+            .init()
+            .expect("Should be able to initialise connection");
+
+        let units = systemctl.list_units();
+
+        assert!(units.is_ok());
+
+        let units = units.expect("Units are OK at this point.");
+
+        assert!(!units.is_empty());
+    }
 
     #[test]
     fn can_list_units() {
@@ -72,7 +110,7 @@ mod tests {
             let proxy = ManagerProxy::new(&connection).await?;
             let res = proxy.list_units().await?;
 
-            assert!(res.len() > 0);
+            assert!(!res.is_empty());
             Ok(())
         });
 

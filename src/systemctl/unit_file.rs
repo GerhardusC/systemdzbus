@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub struct UnitFile {
+    // The location of the unit file on disk
     pub path: String,
     pub enablement_status: EnablementStatus,
 }
@@ -11,9 +12,9 @@ pub enum EnablementStatus {
     Enabled,
     EnabledRuntime,
     Generated,
-    Other,
     Static,
     Transient,
+    Other(String),
 }
 
 impl From<String> for EnablementStatus {
@@ -26,7 +27,7 @@ impl From<String> for EnablementStatus {
             "generated" => EnablementStatus::Generated,
             "static" => EnablementStatus::Static,
             "transient" => EnablementStatus::Transient,
-            _ => EnablementStatus::Other,
+            _ => EnablementStatus::Other(value),
         }
     }
 }

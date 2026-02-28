@@ -105,7 +105,6 @@ mod tests {
                 .expect("Initialised at this point");
 
             let state = proxy.get_unit_file_state("dbus.service").await;
-            dbg!(&state);
 
             assert!(state.is_ok());
         });
