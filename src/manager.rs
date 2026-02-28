@@ -103,7 +103,7 @@ pub trait Manager {
     /// May be used to enable one or more units in the system (by creating symlinks to them in /etc/ or /run/). It takes a list of unit files to enable (either just file names or full
     /// absolute paths if the unit files are residing outside the usual unit search paths) and two booleans: the first controls whether the unit shall be enabled for runtime only (true, /run/), or
     /// persistently (false, /etc/). The second one controls whether symlinks pointing to other units shall be replaced if necessary. This method returns one boolean and an array of the changes made. The
-    /// boolean signals whether the unit files contained any enablement information (i.e. an [Install]) section. The changes array consists of structures with three strings: the type of the change (one of
+    /// boolean signals whether the unit files contained any enablement information (i.e. an "Install") section. The changes array consists of structures with three strings: the type of the change (one of
     /// "symlink" or "unlink"), the file name of the symlink and the destination of the symlink. Note that most of the following calls return a changes list in the same format.
     ///
     /// Similarly, DisableUnitFiles() disables one or more units in the system, i.e. removes all symlinks to them in /etc/ and /run/.
@@ -118,7 +118,7 @@ pub trait Manager {
     /// SD_SYSTEMD_UNIT_PORTABLE will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.
     ///
     /// Similarly, ReenableUnitFiles() applies the changes to one or more units that would result from disabling and enabling the unit quickly one after the other in an atomic fashion. This is useful to apply
-    /// updated [Install] information contained in unit files.
+    /// updated "Install" information contained in unit files.
     ///
     /// Similarly, LinkUnitFiles() links unit files (that are located outside of the usual unit search paths) into the unit search path.
     ///
@@ -575,7 +575,7 @@ pub trait Manager {
     ///
     /// StartTransientUnit() may be used to create and start a transient unit which will be released as soon as it is not running or referenced anymore or the system is rebooted.  name is the unit name
     /// including its suffix and must be unique.  mode is the same as in StartUnit(), properties contains properties of the unit, specified like in SetUnitProperties().  aux is currently unused and should be
-    /// passed as an empty array. See the New Control Group Interface[2] for more information how to make use of this functionality for resource control purposes.
+    /// passed as an empty array. See the New Control Group Interface\[2\] for more information how to make use of this functionality for resource control purposes.
     fn set_unit_properties(
         &self,
         name: &str,
@@ -587,7 +587,7 @@ pub trait Manager {
     /// ## METHOD
     /// May be used to create and start a transient unit which will be released as soon as it is not running or referenced anymore or the system is rebooted.  name is the unit name
     /// including its suffix and must be unique.  mode is the same as in StartUnit(), properties contains properties of the unit, specified like in SetUnitProperties().  aux is currently unused and should be
-    /// passed as an empty array. See the New Control Group Interface[2] for more information how to make use of this functionality for resource control purposes.
+    /// passed as an empty array. See the New Control Group Interface\[2\] for more information how to make use of this functionality for resource control purposes.
     #[allow(clippy::type_complexity)]
     fn start_transient_unit(
         &self,
