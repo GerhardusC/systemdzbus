@@ -53,17 +53,17 @@
 //! [Writing a client proxy]: https://dbus2.github.io/zbus/client.html
 //! [D-Bus standard interfaces]: https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces,
 
+pub mod errors;
 pub mod manager;
 pub mod systemctl;
-pub mod errors;
 pub use manager::ManagerProxy;
 pub use zbus::Connection;
 
 #[cfg(test)]
 mod tests {
+    use crate::manager::ManagerProxy;
     use std::error::Error;
     use zbus::Connection;
-    use crate::{manager::ManagerProxy};
 
     #[test]
     fn can_list_units() {

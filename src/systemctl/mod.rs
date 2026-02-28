@@ -1,16 +1,15 @@
 pub mod unit_commands;
 
-use zbus::{zvariant::OwnedObjectPath, Connection, blocking::Connection as ConnectionBlocking};
+use zbus::{Connection, blocking::Connection as ConnectionBlocking, zvariant::OwnedObjectPath};
 
 use crate::{ManagerProxy, errors::SystemdError};
 
 pub struct SystemCtl<'a> {
     manager_proxy: Option<ManagerProxy<'a>>,
     connection_level: ConnectionLevel,
-
 }
 
-impl <'a>SystemCtl <'a> {
+impl<'a> SystemCtl<'a> {
     pub fn new(connection_level: ConnectionLevel) -> Self {
         SystemCtl {
             manager_proxy: None,
@@ -33,7 +32,6 @@ impl <'a>SystemCtl <'a> {
         Ok(())
     }
 }
-
 
 pub enum ConnectionLevel {
     /// Create a Connection to the session/user message bus.
@@ -117,7 +115,7 @@ pub enum UnitActiveState {
     Invalid,
 }
 
-impl From <String> for UnitActiveState {
+impl From<String> for UnitActiveState {
     fn from(value: String) -> Self {
         match value.as_ref() {
             "active" => UnitActiveState::Active,
@@ -156,20 +154,34 @@ pub struct Unit {
     pub job_object_path: OwnedObjectPath,
 }
 
-impl From <(
-    String, String,
-    String, String,
-    String, String,
-    OwnedObjectPath, u32,
-    String, OwnedObjectPath,
-)> for Unit {
-    fn from(value: (
-    String, String,
-    String, String,
-    String, String,
-    OwnedObjectPath, u32,
-    String, OwnedObjectPath,
-    )) -> Self {
+impl
+    From<(
+        String,
+        String,
+        String,
+        String,
+        String,
+        String,
+        OwnedObjectPath,
+        u32,
+        String,
+        OwnedObjectPath,
+    )> for Unit
+{
+    fn from(
+        value: (
+            String,
+            String,
+            String,
+            String,
+            String,
+            String,
+            OwnedObjectPath,
+            u32,
+            String,
+            OwnedObjectPath,
+        ),
+    ) -> Self {
         Self {
             name: value.0,
             description: value.1,
@@ -181,7 +193,6 @@ impl From <(
             queued_job_id: if value.7 == 0 { None } else { Some(value.7) },
             job_type: value.8,
             job_object_path: value.9,
-
         }
     }
 }
@@ -195,7 +206,10 @@ mod tests {
         smol::block_on(async {
             let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
 
-            system_ctl.init().await.expect("Should be able to init connection");
+            system_ctl
+                .init()
+                .await
+                .expect("Should be able to init connection");
 
             let units = system_ctl.list_units().await;
 
@@ -207,4 +221,3 @@ mod tests {
         });
     }
 }
-

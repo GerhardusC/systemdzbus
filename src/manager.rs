@@ -541,7 +541,7 @@ pub trait Manager {
 
     /// RestartUnit method
     fn restart_unit(&self, name: &str, mode: &str)
-        -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
+    -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
 
     /// RevertUnitFiles method
     fn revert_unit_files(&self, files: &[&str]) -> zbus::Result<Vec<(String, String, String)>>;
@@ -685,7 +685,7 @@ pub trait Manager {
     /// skipped because it didn't apply to the unit's current state.
     #[zbus(signal)]
     fn job_new(&self, id: u32, job: zbus::zvariant::ObjectPath<'_>, unit: &str)
-        -> zbus::Result<()>;
+    -> zbus::Result<()>;
 
     /// # JobRemoved
     /// ## SIGNAL
