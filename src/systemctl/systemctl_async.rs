@@ -1,11 +1,11 @@
-use zbus::Connection;
+use zbus::{Connection, zvariant::OwnedObjectPath};
 
 use crate::{
     ManagerProxy,
     errors::SystemdError,
     systemctl::{
         connection_level::ConnectionLevel,
-        unit::Unit,
+        unit::{Unit, UnitMode},
         unit_file::{EnablementStatus, UnitFile},
     },
 };
@@ -66,10 +66,10 @@ impl<'a> SystemCtl<'a> {
 
     /// May be used to get the unit object path for a unit name. It takes the unit name and returns
     /// the object path. If a unit has not been loaded yet by this name this method will fail.
-    pub async fn get_unit(&self, name: &str) -> Result<String, SystemdError> {
+    pub async fn get_unit(&self, name: &str) -> Result<OwnedObjectPath, SystemdError> {
         let owned_object_path = self.get_manager_proxy().get_unit(name).await?;
 
-        Ok(owned_object_path.to_string())
+        Ok(owned_object_path)
     }
 
     /// Returns an array of unit names and their enablement status. Note that ListUnit() returns a list of units currently loaded into memory, while ListUnitFiles() returns a list of unit
@@ -93,6 +93,22 @@ impl<'a> SystemCtl<'a> {
     /// May be invoked to reload all unit files.
     pub async fn reload(&self) -> Result<(), SystemdError> {
         Ok(self.get_manager_proxy().reload().await?)
+    }
+
+    /// RestartUnit method, takes in the mode, i.e. same as start unit, I quote:
+    /// The mode needs to be one of "replace", "fail", "isolate", "ignore-dependencies", or
+    /// "ignore-requirements". returns the object path of the restarted unit.
+    pub async fn restart_unit(
+        &self,
+        name: &str,
+        mode: UnitMode,
+    ) -> Result<OwnedObjectPath, SystemdError> {
+        let owned_object_path = self
+            .get_manager_proxy()
+            .restart_unit(name, &mode.to_string())
+            .await?;
+
+        Ok(owned_object_path)
     }
 }
 

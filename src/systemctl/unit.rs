@@ -3,6 +3,44 @@ use zbus::zvariant::OwnedObjectPath;
 // NOTE: These docs are all from the man page of org.freedesktop.systemd1
 
 #[derive(Debug)]
+pub enum UnitMode {
+    Replace,
+    Fail,
+    Isolate,
+    IgnoreDependencies,
+    IgnoreRequirements,
+    Other(String),
+}
+
+impl std::fmt::Display for UnitMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mode = match self {
+            UnitMode::Replace => "replace",
+            UnitMode::Fail => "fail",
+            UnitMode::Isolate => "isolate",
+            UnitMode::IgnoreDependencies => "ignore-dependencies",
+            UnitMode::IgnoreRequirements => "ignore-requirements",
+            UnitMode::Other(other) => other,
+        };
+        f.write_str(mode)?;
+        Ok(())
+    }
+}
+
+impl From<String> for UnitMode {
+    fn from(value: String) -> Self {
+        match value.as_ref() {
+            "replace" => UnitMode::Replace,
+            "fail" => UnitMode::Fail,
+            "isolate" => UnitMode::Isolate,
+            "ignore-dependencies" => UnitMode::IgnoreDependencies,
+            "ignore-requirements" => UnitMode::IgnoreRequirements,
+            _ => UnitMode::Other(value),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum UnitLoadState {
     Stub,
     Loaded,

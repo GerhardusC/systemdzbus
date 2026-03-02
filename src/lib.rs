@@ -85,6 +85,7 @@ pub mod systemctl;
 pub use manager::ManagerProxy;
 pub use systemctl::systemctl_async::SystemCtlBuilder;
 pub use systemctl::systemctl_blocking::SystemCtlBlockingBuilder;
+pub use systemctl::unit::UnitMode;
 
 pub use zbus::Connection;
 
