@@ -122,6 +122,31 @@ impl<'a> SystemCtl<'a> {
             .await?)
     }
 
+    /// May be used to enable one or more units in the system (by creating symlinks to them in /etc/ or /run/). It takes a list of unit files to enable (either just file names or full
+    /// absolute paths if the unit files are residing outside the usual unit search paths) and two booleans: the first controls whether the unit shall be enabled for runtime only (true, /run/), or
+    /// persistently (false, /etc/). The second one controls whether symlinks pointing to other units shall be replaced if necessary. This method returns one boolean and an array of the changes made. The
+    /// boolean signals whether the unit files contained any enablement information (i.e. an "Install") section. The changes array consists of structures with three strings: the type of the change (one of
+    /// "symlink" or "unlink"), the file name of the symlink and the destination of the symlink. Note that most of the following calls return a changes list in the same format.
+    pub async fn enable_units(
+        &self,
+        _names: &[&str],
+        _runtime_only: bool,
+        _force: bool,
+    ) -> Result<Unit, SystemdError> {
+        // TODO: Add these docs to disable unit and whatever is exposed.
+        // Similarly, DisableUnitFiles() disables one or more units in the system, i.e. removes all symlinks to them in /etc/ and /run/.
+        // The EnableUnitFilesWithFlags() and DisableUnitFilesWithFlags() take in options as flags instead of booleans to allow for extendability, defined as follows:
+        // SD_SYSTEMD_UNIT_RUNTIME will enable or disable the unit for runtime only, SD_SYSTEMD_UNIT_FORCE controls whether symlinks pointing to other units shall be replaced if necessary.
+        // SD_SYSTEMD_UNIT_PORTABLE will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.
+        // Similarly, ReenableUnitFiles() applies the changes to one or more units that would result from disabling and enabling the unit quickly one after the other in an atomic fashion. This is useful to apply
+        // updated "Install" information contained in unit files.
+        // Similarly, LinkUnitFiles() links unit files (that are located outside of the usual unit search paths) into the unit search path.
+        // Similarly, PresetUnitFiles() enables/disables one or more unit files according to the preset policy. See systemd.preset(7) for more information.
+        // Similarly, MaskUnitFiles() masks unit files and UnmaskUnitFiles() unmasks them again.
+        // Ok(self.get_manager_proxy().enable_unit_files(names, runtime_only, force)?)
+        todo!()
+    }
+
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub async fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
         Ok(self
