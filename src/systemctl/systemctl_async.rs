@@ -57,6 +57,40 @@ impl<'a> SystemCtl<'a> {
         &self.manager_proxy
     }
 
+    /// Enqueues a start job and possibly depending jobs. It takes the unit to activate and a mode
+    /// string as arguments. The mode needs to be one of "replace", "fail", "isolate", "ignore-dependencies", or
+    /// "ignore-requirements". If "replace", the method will start the unit and its dependencies, possibly
+    /// replacing already queued jobs that conflict with it. If "fail", the method will start the unit and its
+    /// dependencies, but will fail if this would change an already queued job. If "isolate", the method will
+    /// start the unit in question and terminate all units that aren't dependencies of it. If
+    /// "ignore-dependencies", it will start a unit but ignore all its dependencies. If "ignore-requirements",
+    /// it will start a unit but only ignore the requirement dependencies. It is not recommended to make use of
+    /// the latter two options. On completion, this method returns the newly created job object.
+    pub async fn start_unit(
+        &self,
+        name: &str,
+        mode: UnitMode,
+    ) -> Result<OwnedObjectPath, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .start_unit(name, &mode.to_string())
+            .await?)
+    }
+
+    /// RestartUnit method, takes in the mode, i.e. same as start unit, I quote:
+    /// The mode needs to be one of "replace", "fail", "isolate", "ignore-dependencies", or
+    /// "ignore-requirements". returns the object path of the restarted unit.
+    pub async fn restart_unit(
+        &self,
+        name: &str,
+        mode: UnitMode,
+    ) -> Result<OwnedObjectPath, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .restart_unit(name, &mode.to_string())
+            .await?)
+    }
+
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub async fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
         let units = self.get_manager_proxy().list_units().await?;
@@ -93,22 +127,6 @@ impl<'a> SystemCtl<'a> {
     /// May be invoked to reload all unit files.
     pub async fn reload(&self) -> Result<(), SystemdError> {
         Ok(self.get_manager_proxy().reload().await?)
-    }
-
-    /// RestartUnit method, takes in the mode, i.e. same as start unit, I quote:
-    /// The mode needs to be one of "replace", "fail", "isolate", "ignore-dependencies", or
-    /// "ignore-requirements". returns the object path of the restarted unit.
-    pub async fn restart_unit(
-        &self,
-        name: &str,
-        mode: UnitMode,
-    ) -> Result<OwnedObjectPath, SystemdError> {
-        let owned_object_path = self
-            .get_manager_proxy()
-            .restart_unit(name, &mode.to_string())
-            .await?;
-
-        Ok(owned_object_path)
     }
 }
 
