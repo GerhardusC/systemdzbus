@@ -101,7 +101,9 @@ impl<'a> SystemCtlBlocking<'a> {
     /// unit is already running and fails otherwise. If a service is restarted that isn't running, it will be started unless the "Try" flavor is used in which case a service that isn't running is not affected by the restart. The
     /// "ReloadOrRestart" flavors attempt a reload if the unit supports it and use a restart otherwise.
     pub fn reload_unit(&self, name: &str, mode: UnitMode) -> Result<OwnedObjectPath, SystemdError> {
-        Ok(self.get_manager_proxy().reload_unit(name, &mode.to_string())?)
+        Ok(self
+            .get_manager_proxy()
+            .reload_unit(name, &mode.to_string())?)
     }
 
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
