@@ -46,9 +46,9 @@
 //!
 //!       /// Use the methods on the proxy. These are the ones
 //!       /// that are actually documented here
-//!       let res = proxy.list_units().await?;
+//!       let units_raw = proxy.list_units().await?;
 //!
-//!       assert!(!res.is_empty());
+//!       assert!(!units_raw.is_empty());
 //!
 //!       /// Or you can still have your connection managed, but still have direct access to
 //!       /// manager.
