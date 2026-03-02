@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub struct UnitFile {
-    // The location of the unit file on disk
+    /// The location of the unit file on disk, I think
     pub path: String,
     pub enablement_status: EnablementStatus,
 }

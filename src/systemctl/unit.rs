@@ -58,25 +58,25 @@ impl From<String> for UnitActiveState {
 
 #[derive(Debug)]
 pub struct Unit {
-    // The primary unit name as string
+    /// The primary unit name as string
     pub name: String,
-    // The human readable description
+    /// The human readable description
     pub description: String,
-    // The load state (i.e. whether the unit file has been loaded successfully)
+    /// The load state (i.e. whether the unit file has been loaded successfully)
     pub load_state: UnitLoadState,
-    // The active state (i.e. whether the unit is currently started or not)
+    /// The active state (i.e. whether the unit is currently started or not)
     pub active_state: UnitActiveState,
-    // The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
+    /// The sub state (a more fine-grained version of the active state that is specific to the unit type, which the active state is not)
     pub sub_state: String,
-    // A unit that is being followed in its state by this unit, if there is any.
+    /// A unit that is being followed in its state by this unit, if there is any.
     pub followed_unit: Option<String>,
-    // The unit object path
+    /// The unit object path
     pub object_path: OwnedObjectPath,
-    // If there is a job queued for the job unit, the numeric job id
+    /// If there is a job queued for the job unit, the numeric job id
     pub queued_job_id: Option<u32>,
-    // The job type as string
+    /// The job type as string
     pub job_type: String,
-    // The job object path
+    /// The job object path
     pub job_object_path: OwnedObjectPath,
 }
 

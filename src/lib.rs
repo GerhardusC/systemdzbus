@@ -12,9 +12,9 @@
 //!
 //!```rust
 //!     use std::error::Error;
-//!     use systemdzbus::{SystemCtlBuilder, Unit};
+//!     use systemdzbus::SystemCtlBuilder;
 //!
-//!     async fn example_get_units() -> Result<Vec<Unit>, Box::<dyn Error>> {
+//!     async fn example_get_units() -> Result<(), Box::<dyn Error>> {
 //!       let systemctl_builder = SystemCtlBuilder::new()
 //!         // You may also want to have access to the system bus instead of only the user bus
 //!         .with_system_connection_level();
@@ -25,7 +25,7 @@
 //!
 //!       assert!(!units.is_empty());
 //!
-//!       Ok(units)
+//!       Ok(())
 //!     }
 //!```
 //!
@@ -35,7 +35,7 @@
 //!
 //!```rust
 //!    use std::error::Error;
-//!    use systemdzbus::{ManagerProxy, Connection, SystemCtlBuilder, ConnectionLevel};
+//!    use systemdzbus::{ManagerProxy, Connection, SystemCtlBuilder};
 //!
 //!    async fn example_get_units_manager_proxy() -> Result<(), Box::<dyn Error>> {
 //!       /// Create zbus connection. You can also use Connection::session() here.
@@ -84,11 +84,8 @@ pub mod errors;
 pub mod manager;
 pub mod systemctl;
 pub use manager::ManagerProxy;
-pub use systemctl::connection_level::ConnectionLevel;
 pub use systemctl::systemctl_async::SystemCtlBuilder;
 pub use systemctl::systemctl_blocking::SystemCtlBlockingBuilder;
-pub use systemctl::unit::*;
-pub use systemctl::unit_file::*;
 
 pub use zbus::Connection;
 
