@@ -118,9 +118,7 @@ mod tests {
 
     #[test]
     fn can_get_unit() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new();
-
-        let system_ctl = system_ctl_builder
+        let system_ctl = SystemCtlBlockingBuilder::new()
             .init()
             .expect("Should be able to init connection");
 
@@ -134,17 +132,13 @@ mod tests {
 
         for unit in units {
             let unit = system_ctl.get_unit(&unit.name);
-            dbg!(&unit);
-
             assert!(unit.is_ok());
         }
     }
 
     #[test]
     fn can_get_valid_unit_file_state() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new();
-
-        let system_ctl = system_ctl_builder
+        let system_ctl = SystemCtlBlockingBuilder::new()
             .init()
             .expect("Should be able to init connection");
 
@@ -170,8 +164,7 @@ mod tests {
 
     #[test]
     fn can_list_unit_files() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new();
-        let system_ctl = system_ctl_builder
+        let system_ctl = SystemCtlBlockingBuilder::new()
             .init()
             .expect("Should be able to init connection");
 
@@ -186,8 +179,7 @@ mod tests {
 
     #[test]
     fn can_use_manager_proxy_directly() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new();
-        let system_ctl = system_ctl_builder
+        let system_ctl = SystemCtlBlockingBuilder::new()
             .init()
             .expect("Should be able to init connection");
 
@@ -200,8 +192,7 @@ mod tests {
 
     #[test]
     fn can_list_units() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new();
-        let system_ctl = system_ctl_builder
+        let system_ctl = SystemCtlBlockingBuilder::new()
             .init()
             .expect("Should be able to init connection");
 

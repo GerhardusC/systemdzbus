@@ -119,25 +119,24 @@ mod tests {
     #[test]
     fn can_get_unit() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new();
-
-            let system_ctl = system_ctl_builder
+            let system_ctl = SystemCtlBuilder::new()
                 .init()
                 .await
                 .expect("Should be able to init connection");
 
-            let unit = system_ctl.get_unit("dbus.service").await;
+            let unit = system_ctl
+                .get_unit("dbus.service")
+                .await
+                .expect("Should be able to get dbus unit");
 
-            assert!(unit.is_ok());
+            assert!(unit.contains("dbus"));
         });
     }
 
     #[test]
     fn can_get_valid_unit_file_state() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new();
-
-            let system_ctl = system_ctl_builder
+            let system_ctl = SystemCtlBuilder::new()
                 .init()
                 .await
                 .expect("Should be able to init connection");
@@ -168,9 +167,7 @@ mod tests {
     #[test]
     fn can_list_unit_files() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new();
-
-            let system_ctl = system_ctl_builder
+            let system_ctl = SystemCtlBuilder::new()
                 .init()
                 .await
                 .expect("Should be able to init connection");
@@ -188,9 +185,7 @@ mod tests {
     #[test]
     fn can_use_manager_proxy_directly() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new();
-
-            let system_ctl = system_ctl_builder
+            let system_ctl = SystemCtlBuilder::new()
                 .init()
                 .await
                 .expect("Should be able to init connection");
@@ -206,9 +201,7 @@ mod tests {
     #[test]
     fn can_list_units() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new();
-
-            let system_ctl = system_ctl_builder
+            let system_ctl = SystemCtlBuilder::new()
                 .init()
                 .await
                 .expect("Should be able to init connection");

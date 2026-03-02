@@ -15,11 +15,11 @@
 //!     use systemdzbus::SystemCtlBuilder;
 //!
 //!     async fn example_get_units() -> Result<(), Box::<dyn Error>> {
-//!       let systemctl_builder = SystemCtlBuilder::new()
+//!       let systemctl = SystemCtlBuilder::new()
 //!         // You may also want to have access to the system bus instead of only the user bus
-//!         .with_system_connection_level();
-//!
-//!       let systemctl = systemctl_builder.init().await?;
+//!         .with_system_connection_level()
+//!         .init()
+//!         .await?;
 //!
 //!       let units = systemctl.list_units().await?;
 //!
@@ -52,8 +52,7 @@
 //!
 //!       /// Or you can still have your connection managed, but still have direct access to
 //!       /// manager.
-//!       let systemctl_builder = SystemCtlBuilder::new();
-//!       let systemctl = systemctl_builder.init().await?;
+//!       let systemctl = SystemCtlBuilder::new().init().await?;
 //!
 //!       let manager = systemctl.get_manager_proxy();
 //!
@@ -96,9 +95,8 @@ mod tests {
 
     #[test]
     fn it_can_use_builder_pattern_to_get_system_connection_level() {
-        let systemctl_builder = SystemCtlBlockingBuilder::new().with_system_connection_level();
-
-        let systemctl = systemctl_builder
+        let systemctl = SystemCtlBlockingBuilder::new()
+            .with_system_connection_level()
             .init()
             .expect("Should be able to initialise connection");
 
@@ -113,9 +111,7 @@ mod tests {
 
     #[test]
     fn can_list_units_with_higher_level_interface_blocking() {
-        let systemctl_builder = SystemCtlBlockingBuilder::new();
-
-        let systemctl = systemctl_builder
+        let systemctl = SystemCtlBlockingBuilder::new()
             .init()
             .expect("Should be able to initialise connection");
 
