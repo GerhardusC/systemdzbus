@@ -77,6 +77,23 @@ impl<'a> SystemCtl<'a> {
             .await?)
     }
 
+    /// Similar to StartUnit() but stops the specified unit rather than starting it. Note that the
+    /// "isolate" mode is invalid for this method.
+    pub async fn stop_unit(
+        &self,
+        name: &str,
+        mode: UnitMode,
+    ) -> Result<OwnedObjectPath, SystemdError> {
+        if let UnitMode::Isolate = mode {
+            return Err(SystemdError::IsolateModeUnavailable);
+        };
+
+        Ok(self
+            .get_manager_proxy()
+            .stop_unit(name, &mode.to_string())
+            .await?)
+    }
+
     /// RestartUnit method, takes in the mode, i.e. same as start unit, I quote:
     /// The mode needs to be one of "replace", "fail", "isolate", "ignore-dependencies", or
     /// "ignore-requirements". returns the object path of the restarted unit.
