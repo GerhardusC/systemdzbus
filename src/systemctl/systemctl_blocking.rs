@@ -59,17 +59,15 @@ impl<'a> SystemCtlBlocking<'a> {
 
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
-        let proxy = self.get_manager_proxy();
+        let units = self.get_manager_proxy().list_units()?;
 
-        let units = proxy.list_units()?;
         Ok(units.into_iter().map(Into::into).collect())
     }
 
     /// May be used to get the unit object path for a unit name. It takes the unit name and returns
     /// the object path. If a unit has not been loaded yet by this name this method will fail.
     pub fn get_unit(&self, name: &str) -> Result<String, SystemdError> {
-        let proxy = self.get_manager_proxy();
-        let owned_object_path = proxy.get_unit(name)?;
+        let owned_object_path = self.get_manager_proxy().get_unit(name)?;
 
         Ok(owned_object_path.to_string())
     }
@@ -78,9 +76,8 @@ impl<'a> SystemCtlBlocking<'a> {
     /// files that were found on disk. Note that while most units are read directly from a unit file with the same name, some units are not backed by files and some files (templates) cannot directly be loaded
     /// as units but need to be instantiated instead.
     pub fn list_unit_files(&self) -> Result<Vec<UnitFile>, SystemdError> {
-        let proxy = self.get_manager_proxy();
+        let unit_files = self.get_manager_proxy().list_unit_files()?;
 
-        let unit_files = proxy.list_unit_files()?;
         Ok(unit_files.into_iter().map(Into::into).collect())
     }
 
@@ -88,16 +85,14 @@ impl<'a> SystemCtlBlocking<'a> {
     /// here is simply name.service, in other words, if you retrieved the unit files via
     /// list_unit_files, you may want to strip the prefix on the path to get the service name.
     pub fn get_unit_file_state(&self, file: &str) -> Result<EnablementStatus, SystemdError> {
-        let proxy = self.get_manager_proxy();
-        let unit_file_state = proxy.get_unit_file_state(file)?;
+        let unit_file_state = self.get_manager_proxy().get_unit_file_state(file)?;
 
         Ok(unit_file_state.into())
     }
 
     /// May be invoked to reload all unit files.
     pub fn reload(&self) -> Result<(), SystemdError> {
-        let proxy = self.get_manager_proxy();
-        Ok(proxy.reload()?)
+        Ok(self.get_manager_proxy().reload()?)
     }
 }
 
