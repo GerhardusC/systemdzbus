@@ -14,9 +14,22 @@ pub struct SystemCtlBlockingBuilder {
     connection_level: ConnectionLevel,
 }
 
+impl Default for SystemCtlBlockingBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SystemCtlBlockingBuilder {
-    pub fn new(connection_level: ConnectionLevel) -> Self {
-        Self { connection_level }
+    pub fn new() -> Self {
+        Self {
+            connection_level: ConnectionLevel::UserLevel,
+        }
+    }
+
+    pub fn with_system_connection_level(mut self) -> Self {
+        self.connection_level = ConnectionLevel::SystemLevel;
+        self
     }
 
     pub fn init<'a>(self) -> Result<SystemCtlBlocking<'a>, SystemdError> {
@@ -105,7 +118,7 @@ mod tests {
 
     #[test]
     fn can_get_unit() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new(ConnectionLevel::UserLevel);
+        let system_ctl_builder = SystemCtlBlockingBuilder::new();
 
         let system_ctl = system_ctl_builder
             .init()
@@ -129,7 +142,7 @@ mod tests {
 
     #[test]
     fn can_get_valid_unit_file_state() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new(ConnectionLevel::UserLevel);
+        let system_ctl_builder = SystemCtlBlockingBuilder::new();
 
         let system_ctl = system_ctl_builder
             .init()
@@ -157,7 +170,7 @@ mod tests {
 
     #[test]
     fn can_list_unit_files() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new(ConnectionLevel::UserLevel);
+        let system_ctl_builder = SystemCtlBlockingBuilder::new();
         let system_ctl = system_ctl_builder
             .init()
             .expect("Should be able to init connection");
@@ -173,7 +186,7 @@ mod tests {
 
     #[test]
     fn can_use_manager_proxy_directly() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new(ConnectionLevel::UserLevel);
+        let system_ctl_builder = SystemCtlBlockingBuilder::new();
         let system_ctl = system_ctl_builder
             .init()
             .expect("Should be able to init connection");
@@ -187,7 +200,7 @@ mod tests {
 
     #[test]
     fn can_list_units() {
-        let system_ctl_builder = SystemCtlBlockingBuilder::new(ConnectionLevel::UserLevel);
+        let system_ctl_builder = SystemCtlBlockingBuilder::new();
         let system_ctl = system_ctl_builder
             .init()
             .expect("Should be able to init connection");

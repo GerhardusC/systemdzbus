@@ -11,18 +11,22 @@
 //!## Usage
 //!
 //!```rust
-//!    use std::error::Error;
-//!    use systemdzbus::{SystemCtl, SystemCtlBuilder, ConnectionLevel};
+//!     use std::error::Error;
+//!     use systemdzbus::{SystemCtlBuilder, Unit};
 //!
-//!     async fn example_get_units_higher_level() -> Result<(), Box::<dyn Error>> {
-//!       let systemctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+//!     async fn example_get_units() -> Result<Vec<Unit>, Box::<dyn Error>> {
+//!       let systemctl_builder = SystemCtlBuilder::new()
+//!         // You may also want to have access to the system bus instead of only the user bus
+//!         .with_system_connection_level();
+//!
 //!       let systemctl = systemctl_builder.init().await?;
 //!
 //!       let units = systemctl.list_units().await?;
 //!
 //!       assert!(!units.is_empty());
-//!       Ok(())
-//!   }
+//!
+//!       Ok(units)
+//!     }
 //!```
 //!
 //!You may also access the manager proxy directly if managing the connection yourself suits your
@@ -31,13 +35,7 @@
 //!
 //!```rust
 //!    use std::error::Error;
-//!    use systemdzbus::{
-//!        ManagerProxy,
-//!        Connection,
-//!        SystemCtl,
-//!        SystemCtlBuilder,
-//!        ConnectionLevel
-//!    };
+//!    use systemdzbus::{ManagerProxy, Connection, SystemCtlBuilder, ConnectionLevel};
 //!
 //!    async fn example_get_units_manager_proxy() -> Result<(), Box::<dyn Error>> {
 //!       /// Create zbus connection. You can also use Connection::session() here.
@@ -52,8 +50,9 @@
 //!
 //!       assert!(!res.is_empty());
 //!
-//!       /// Or you can still have your connection managed.
-//!       let systemctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+//!       /// Or you can still have your connection managed, but still have direct access to
+//!       /// manager.
+//!       let systemctl_builder = SystemCtlBuilder::new();
 //!       let systemctl = systemctl_builder.init().await?;
 //!
 //!       let manager = systemctl.get_manager_proxy();
@@ -86,8 +85,11 @@ pub mod manager;
 pub mod systemctl;
 pub use manager::ManagerProxy;
 pub use systemctl::connection_level::ConnectionLevel;
-pub use systemctl::systemctl_async::{SystemCtl, SystemCtlBuilder};
-pub use systemctl::systemctl_blocking::{SystemCtlBlocking, SystemCtlBlockingBuilder};
+pub use systemctl::systemctl_async::SystemCtlBuilder;
+pub use systemctl::systemctl_blocking::SystemCtlBlockingBuilder;
+pub use systemctl::unit::*;
+pub use systemctl::unit_file::*;
+
 pub use zbus::Connection;
 
 #[cfg(test)]
@@ -96,8 +98,25 @@ mod tests {
     use std::error::Error;
 
     #[test]
+    fn it_can_use_builder_pattern_to_get_system_connection_level() {
+        let systemctl_builder = SystemCtlBlockingBuilder::new().with_system_connection_level();
+
+        let systemctl = systemctl_builder
+            .init()
+            .expect("Should be able to initialise connection");
+
+        let units = systemctl.list_units();
+
+        assert!(units.is_ok());
+
+        let units = units.expect("Units are OK at this point.");
+
+        assert!(!units.is_empty());
+    }
+
+    #[test]
     fn can_list_units_with_higher_level_interface_blocking() {
-        let systemctl_builder = SystemCtlBlockingBuilder::new(ConnectionLevel::UserLevel);
+        let systemctl_builder = SystemCtlBlockingBuilder::new();
 
         let systemctl = systemctl_builder
             .init()

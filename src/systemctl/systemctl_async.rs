@@ -15,8 +15,15 @@ pub struct SystemCtlBuilder {
 }
 
 impl SystemCtlBuilder {
-    pub fn new(connection_level: ConnectionLevel) -> Self {
-        Self { connection_level }
+    pub fn new() -> Self {
+        Self {
+            connection_level: ConnectionLevel::UserLevel,
+        }
+    }
+
+    pub fn with_system_connection_level(mut self) -> Self {
+        self.connection_level = ConnectionLevel::SystemLevel;
+        self
     }
 
     pub async fn init<'a>(self) -> Result<SystemCtl<'a>, SystemdError> {
@@ -26,6 +33,12 @@ impl SystemCtlBuilder {
             manager_proxy: proxy,
             connection_level: self.connection_level,
         })
+    }
+}
+
+impl Default for SystemCtlBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -106,7 +119,7 @@ mod tests {
     #[test]
     fn can_get_unit() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new();
 
             let system_ctl = system_ctl_builder
                 .init()
@@ -122,7 +135,7 @@ mod tests {
     #[test]
     fn can_get_valid_unit_file_state() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new();
 
             let system_ctl = system_ctl_builder
                 .init()
@@ -155,7 +168,7 @@ mod tests {
     #[test]
     fn can_list_unit_files() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new();
 
             let system_ctl = system_ctl_builder
                 .init()
@@ -175,7 +188,7 @@ mod tests {
     #[test]
     fn can_use_manager_proxy_directly() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new();
 
             let system_ctl = system_ctl_builder
                 .init()
@@ -193,7 +206,7 @@ mod tests {
     #[test]
     fn can_list_units() {
         smol::block_on(async {
-            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new();
 
             let system_ctl = system_ctl_builder
                 .init()
