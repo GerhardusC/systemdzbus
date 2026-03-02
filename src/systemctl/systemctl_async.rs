@@ -52,6 +52,15 @@ impl<'a> SystemCtl<'a> {
         Ok(units.into_iter().map(Into::into).collect())
     }
 
+    /// May be used to get the unit object path for a unit name. It takes the unit name and returns
+    /// the object path. If a unit has not been loaded yet by this name this method will fail.
+    pub async fn get_unit(&self, name: &str) -> Result<String, SystemdError> {
+        let proxy = self.get_manager_proxy();
+        let owned_object_path = proxy.get_unit(name).await?;
+
+        Ok(owned_object_path.to_string())
+    }
+
     /// Returns an array of unit names and their enablement status. Note that ListUnit() returns a list of units currently loaded into memory, while ListUnitFiles() returns a list of unit
     /// files that were found on disk. Note that while most units are read directly from a unit file with the same name, some units are not backed by files and some files (templates) cannot directly be loaded
     /// as units but need to be instantiated instead.
@@ -71,6 +80,12 @@ impl<'a> SystemCtl<'a> {
 
         Ok(unit_file_state.into())
     }
+
+    /// May be invoked to reload all unit files.
+    pub async fn reload(&self) -> Result<(), SystemdError> {
+        let proxy = self.get_manager_proxy();
+        Ok(proxy.reload().await?)
+    }
 }
 
 impl ConnectionLevel {
@@ -87,6 +102,22 @@ impl ConnectionLevel {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn can_get_unit() {
+        smol::block_on(async {
+            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+
+            let system_ctl = system_ctl_builder
+                .init()
+                .await
+                .expect("Should be able to init connection");
+
+            let unit = system_ctl.get_unit("dbus.service").await;
+
+            assert!(unit.is_ok());
+        });
+    }
 
     #[test]
     fn can_get_valid_unit_file_state() {
