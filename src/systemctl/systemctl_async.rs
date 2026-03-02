@@ -93,35 +93,43 @@ impl<'a> SystemCtl<'a> {
 
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub async fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
-        let units = self.get_manager_proxy().list_units().await?;
-
-        Ok(units.into_iter().map(Into::into).collect())
+        Ok(self
+            .get_manager_proxy()
+            .list_units()
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect())
     }
 
     /// May be used to get the unit object path for a unit name. It takes the unit name and returns
     /// the object path. If a unit has not been loaded yet by this name this method will fail.
     pub async fn get_unit(&self, name: &str) -> Result<OwnedObjectPath, SystemdError> {
-        let owned_object_path = self.get_manager_proxy().get_unit(name).await?;
-
-        Ok(owned_object_path)
+        Ok(self.get_manager_proxy().get_unit(name).await?)
     }
 
     /// Returns an array of unit names and their enablement status. Note that ListUnit() returns a list of units currently loaded into memory, while ListUnitFiles() returns a list of unit
     /// files that were found on disk. Note that while most units are read directly from a unit file with the same name, some units are not backed by files and some files (templates) cannot directly be loaded
     /// as units but need to be instantiated instead.
     pub async fn list_unit_files(&self) -> Result<Vec<UnitFile>, SystemdError> {
-        let unit_files = self.get_manager_proxy().list_unit_files().await?;
-
-        Ok(unit_files.into_iter().map(Into::into).collect())
+        Ok(self
+            .get_manager_proxy()
+            .list_unit_files()
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect())
     }
 
     /// Returns the current enablement status of a specific unit file. The format of the string
     /// here is simply name.service, in other words, if you retrieved the unit files via
     /// list_unit_files, you may want to strip the prefix on the path to get the service name.
     pub async fn get_unit_file_state(&self, file: &str) -> Result<EnablementStatus, SystemdError> {
-        let unit_file_state = self.get_manager_proxy().get_unit_file_state(file).await?;
-
-        Ok(unit_file_state.into())
+        Ok(self
+            .get_manager_proxy()
+            .get_unit_file_state(file)
+            .await?
+            .into())
     }
 
     /// May be invoked to reload all unit files.
