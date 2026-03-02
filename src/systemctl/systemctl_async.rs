@@ -10,39 +10,43 @@ use crate::{
     },
 };
 
+pub struct SystemCtlBuilder {
+    connection_level: ConnectionLevel,
+}
+
+impl SystemCtlBuilder {
+    pub fn new(connection_level: ConnectionLevel) -> Self {
+        Self { connection_level }
+    }
+
+    pub async fn init<'a>(self) -> Result<SystemCtl<'a>, SystemdError> {
+        let connection = self.connection_level.get_connection().await?;
+        let proxy = ManagerProxy::new(&connection).await?;
+        Ok(SystemCtl {
+            manager_proxy: proxy,
+            connection_level: self.connection_level,
+        })
+    }
+}
+
 pub struct SystemCtl<'a> {
-    manager_proxy: Option<ManagerProxy<'a>>,
+    manager_proxy: ManagerProxy<'a>,
+    #[allow(unused)]
     connection_level: ConnectionLevel,
 }
 
 impl<'a> SystemCtl<'a> {
-    pub fn new(connection_level: ConnectionLevel) -> Self {
-        SystemCtl {
-            manager_proxy: None,
-            connection_level,
-        }
-    }
-
-    pub async fn init(&mut self) -> Result<(), SystemdError> {
-        let connection = self.connection_level.get_connection().await?;
-        let proxy = ManagerProxy::new(&connection).await?;
-        self.manager_proxy = Some(proxy);
-        Ok(())
-    }
-
     /// Get access to the manager proxy directly. This allows you to call all the functions defined
     /// and documented in the ManagerProxy type, which is basically everything in
     /// org.freedesktop.systemd1.Manager. Here you will only get strings and numbers with no
     /// meaning attached to them, hopefully in future this will not be a required method.
-    pub fn get_manager_proxy(&self) -> Result<&ManagerProxy<'a>, SystemdError> {
-        self.manager_proxy
-            .as_ref()
-            .ok_or(SystemdError::InitialisationError)
+    pub fn get_manager_proxy(&self) -> &ManagerProxy<'a> {
+        &self.manager_proxy
     }
 
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub async fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
-        let proxy = self.get_manager_proxy()?;
+        let proxy = self.get_manager_proxy();
 
         let units = proxy.list_units().await?;
         Ok(units.into_iter().map(Into::into).collect())
@@ -52,7 +56,7 @@ impl<'a> SystemCtl<'a> {
     /// files that were found on disk. Note that while most units are read directly from a unit file with the same name, some units are not backed by files and some files (templates) cannot directly be loaded
     /// as units but need to be instantiated instead.
     pub async fn list_unit_files(&self) -> Result<Vec<UnitFile>, SystemdError> {
-        let proxy = self.get_manager_proxy()?;
+        let proxy = self.get_manager_proxy();
 
         let unit_files = proxy.list_unit_files().await?;
         Ok(unit_files.into_iter().map(Into::into).collect())
@@ -62,10 +66,10 @@ impl<'a> SystemCtl<'a> {
     /// here is simply name.service, in other words, if you retrieved the unit files via
     /// list_unit_files, you may want to strip the prefix on the path to get the service name.
     pub async fn get_unit_file_state(&self, file: &str) -> Result<EnablementStatus, SystemdError> {
-        let proxy = self.get_manager_proxy()?;
-        let x = proxy.get_unit_file_state(file).await?;
+        let proxy = self.get_manager_proxy();
+        let unit_file_state = proxy.get_unit_file_state(file).await?;
 
-        Ok(x.into())
+        Ok(unit_file_state.into())
     }
 }
 
@@ -87,9 +91,9 @@ mod tests {
     #[test]
     fn can_get_valid_unit_file_state() {
         smol::block_on(async {
-            let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
 
-            system_ctl
+            let system_ctl = system_ctl_builder
                 .init()
                 .await
                 .expect("Should be able to init connection");
@@ -103,18 +107,15 @@ mod tests {
                 let file = unit
                     .path
                     .split('/')
-                    .last()
+                    .next_back()
                     .expect("Should not be empty string");
                 let status = system_ctl
                     .get_unit_file_state(file)
                     .await
                     .expect("Should be able to get status");
 
-                match status {
-                    EnablementStatus::Other(_) => {
-                        panic!("All unit files should have a valid status returned");
-                    }
-                    _ => (),
+                if let EnablementStatus::Other(_) = status {
+                    panic!("All unit files should have a valid status returned");
                 };
             }
         });
@@ -123,9 +124,9 @@ mod tests {
     #[test]
     fn can_list_unit_files() {
         smol::block_on(async {
-            let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
 
-            system_ctl
+            let system_ctl = system_ctl_builder
                 .init()
                 .await
                 .expect("Should be able to init connection");
@@ -143,16 +144,14 @@ mod tests {
     #[test]
     fn can_use_manager_proxy_directly() {
         smol::block_on(async {
-            let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
 
-            system_ctl
+            let system_ctl = system_ctl_builder
                 .init()
                 .await
                 .expect("Should be able to init connection");
 
-            let proxy = system_ctl
-                .get_manager_proxy()
-                .expect("Initialised at this point");
+            let proxy = system_ctl.get_manager_proxy();
 
             let state = proxy.get_unit_file_state("dbus.service").await;
 
@@ -163,9 +162,9 @@ mod tests {
     #[test]
     fn can_list_units() {
         smol::block_on(async {
-            let mut system_ctl = SystemCtl::new(ConnectionLevel::UserLevel);
+            let system_ctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
 
-            system_ctl
+            let system_ctl = system_ctl_builder
                 .init()
                 .await
                 .expect("Should be able to init connection");

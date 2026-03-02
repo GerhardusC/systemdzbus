@@ -12,11 +12,11 @@
 //!
 //!```rust
 //!    use std::error::Error;
-//!    use systemdzbus::{SystemCtl, ConnectionLevel};
+//!    use systemdzbus::{SystemCtl, SystemCtlBuilder, ConnectionLevel};
 //!
 //!     async fn example_get_units_higher_level() -> Result<(), Box::<dyn Error>> {
-//!       let mut systemctl = SystemCtl::new(ConnectionLevel::UserLevel);
-//!       systemctl.init().await?;
+//!       let systemctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+//!       let systemctl = systemctl_builder.init().await?;
 //!
 //!       let units = systemctl.list_units().await?;
 //!
@@ -31,7 +31,13 @@
 //!
 //!```rust
 //!    use std::error::Error;
-//!    use systemdzbus::{ManagerProxy, Connection, SystemCtl, ConnectionLevel};
+//!    use systemdzbus::{
+//!        ManagerProxy,
+//!        Connection,
+//!        SystemCtl,
+//!        SystemCtlBuilder,
+//!        ConnectionLevel
+//!    };
 //!
 //!    async fn example_get_units_manager_proxy() -> Result<(), Box::<dyn Error>> {
 //!       /// Create zbus connection. You can also use Connection::session() here.
@@ -47,7 +53,14 @@
 //!       assert!(!res.is_empty());
 //!
 //!       /// Or you can still have your connection managed.
-//!       let mut systemctl = SystemCtl::new(ConnectionLevel::UserLevel);
+//!       let systemctl_builder = SystemCtlBuilder::new(ConnectionLevel::UserLevel);
+//!       let systemctl = systemctl_builder.init().await?;
+//!
+//!       let manager = systemctl.get_manager_proxy();
+//!
+//!       let units_raw = manager.list_units().await?;
+//!
+//!       assert!(!units_raw.is_empty());
 //!
 //!       Ok(())
 //!   }
@@ -73,8 +86,8 @@ pub mod manager;
 pub mod systemctl;
 pub use manager::ManagerProxy;
 pub use systemctl::connection_level::ConnectionLevel;
-pub use systemctl::systemctl_async::SystemCtl;
-pub use systemctl::systemctl_blocking::SystemCtlBlocking;
+pub use systemctl::systemctl_async::{SystemCtl, SystemCtlBuilder};
+pub use systemctl::systemctl_blocking::{SystemCtlBlocking, SystemCtlBlockingBuilder};
 pub use zbus::Connection;
 
 #[cfg(test)]
@@ -84,8 +97,9 @@ mod tests {
 
     #[test]
     fn can_list_units_with_higher_level_interface_blocking() {
-        let mut systemctl = SystemCtlBlocking::new(ConnectionLevel::UserLevel);
-        systemctl
+        let systemctl_builder = SystemCtlBlockingBuilder::new(ConnectionLevel::UserLevel);
+
+        let systemctl = systemctl_builder
             .init()
             .expect("Should be able to initialise connection");
 
