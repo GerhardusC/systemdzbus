@@ -5,6 +5,7 @@ use crate::{
     errors::SystemdError,
     systemctl::{
         connection_level::ConnectionLevel,
+        job::Job,
         unit::{Unit, UnitEnablementResponse, UnitMode},
         unit_file::{EnablementStatus, UnitFile},
     },
@@ -270,6 +271,23 @@ impl<'a> SystemCtl<'a> {
             .into())
     }
 
+    /// Returns an array with all currently queued jobs. Returns an array consisting of structures with the following elements:
+    /// •   The numeric job id
+    /// •   The primary unit name for this job
+    /// •   The job type as string
+    /// •   The job state as string
+    /// •   The job object path
+    /// •   The unit object path
+    pub async fn list_jobs(&self) -> Result<Vec<Job>, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .list_jobs()
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect())
+    }
+
     /// May be invoked to reload all unit files.
     pub async fn reload(&self) -> Result<(), SystemdError> {
         Ok(self.get_manager_proxy().reload().await?)
@@ -290,6 +308,20 @@ impl ConnectionLevel {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn it_can_list_jobs() {
+        smol::block_on(async {
+            let system_ctl = SystemCtlBuilder::new()
+                .init()
+                .await
+                .expect("Should be able to init connection");
+
+            let jobs = system_ctl.list_jobs().await;
+
+            assert!(jobs.is_ok());
+        });
+    }
 
     #[test]
     fn can_get_unit() {

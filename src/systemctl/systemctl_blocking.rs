@@ -5,6 +5,7 @@ use crate::{
     manager::ManagerProxyBlocking,
     systemctl::{
         connection_level::ConnectionLevel,
+        job::Job,
         unit::{Unit, UnitEnablementResponse, UnitMode},
         unit_file::{EnablementStatus, UnitFile},
     },
@@ -261,6 +262,22 @@ impl<'a> SystemCtlBlocking<'a> {
     /// list_unit_files, you may want to strip the prefix on the path to get the service name.
     pub fn get_unit_file_state(&self, file: &str) -> Result<EnablementStatus, SystemdError> {
         Ok(self.get_manager_proxy().get_unit_file_state(file)?.into())
+    }
+
+    /// Returns an array with all currently queued jobs. Returns an array consisting of structures with the following elements:
+    /// •   The numeric job id
+    /// •   The primary unit name for this job
+    /// •   The job type as string
+    /// •   The job state as string
+    /// •   The job object path
+    /// •   The unit object path
+    pub fn list_jobs(&self) -> Result<Vec<Job>, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .list_jobs()?
+            .into_iter()
+            .map(Into::into)
+            .collect())
     }
 
     /// May be invoked to reload all unit files.
