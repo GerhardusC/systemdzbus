@@ -144,6 +144,30 @@ impl<'a> SystemCtlBlocking<'a> {
             .into())
     }
 
+    /// Disables one or more units in the system, i.e. removes all symlinks to them in /etc/ and /run/.
+    pub fn disable_units(
+        &self,
+        names: &[&str],
+        runtime_only: bool,
+    ) -> Result<UnitEnablementResponse, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .disable_unit_files(names, runtime_only)?
+            .into())
+    }
+
+    /// Similar to disable unit, but for a single unit.
+    pub fn disable_unit(
+        &self,
+        name: &str,
+        runtime_only: bool,
+    ) -> Result<UnitEnablementResponse, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .disable_unit_files(&[name], runtime_only)?
+            .into())
+    }
+
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
         Ok(self

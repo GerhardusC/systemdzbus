@@ -22,6 +22,21 @@ pub enum UnitChangeKind {
     Other(String),
 }
 
+impl From<Vec<(String, String, String)>> for UnitEnablementResponse {
+    fn from(value: Vec<(String, String, String)>) -> Self {
+        UnitEnablementResponse::AdditionalContext(
+            value
+                .into_iter()
+                .map(|x| UnitEnablementChange {
+                    unit_change_kind: x.0.into(),
+                    filename: x.1,
+                    destination: x.2,
+                })
+                .collect(),
+        )
+    }
+}
+
 impl From<(bool, Vec<(String, String, String)>)> for UnitEnablementResponse {
     fn from(value: (bool, Vec<(String, String, String)>)) -> Self {
         if value.0 {
