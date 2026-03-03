@@ -122,6 +122,18 @@ impl<'a> SystemCtl<'a> {
             .await?)
     }
 
+    /// A combination or the reload and restart methods.
+    pub async fn reload_or_restart_unit(
+        &self,
+        name: &str,
+        mode: UnitMode,
+    ) -> Result<OwnedObjectPath, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .reload_or_restart_unit(name, &mode.to_string())
+            .await?)
+    }
+
     /// May be used to enable one or more units in the system (by creating symlinks to them in /etc/ or /run/). It takes a list of unit files to enable (either just file names or full
     /// absolute paths if the unit files are residing outside the usual unit search paths) and two booleans: the first controls whether the unit shall be enabled for runtime only (true, /run/), or
     /// persistently (false, /etc/). The second one controls whether symlinks pointing to other units shall be replaced if necessary. This method returns one boolean and an array of the changes made. The
