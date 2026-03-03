@@ -130,7 +130,6 @@ impl<'a> SystemCtlBlocking<'a> {
     /// updated "Install" information contained in unit files.
     /// Similarly, LinkUnitFiles() links unit files (that are located outside of the usual unit search paths) into the unit search path.
     /// Similarly, PresetUnitFiles() enables/disables one or more unit files according to the preset policy. See systemd.preset(7) for more information.
-    /// Similarly, MaskUnitFiles() masks unit files and UnmaskUnitFiles() unmasks them again.
     pub fn enable_units(
         &self,
         names: &[&str],
@@ -187,6 +186,56 @@ impl<'a> SystemCtlBlocking<'a> {
             .into_iter()
             .map(Into::into)
             .collect())
+    }
+
+    /// MaskUnitFiles() masks unit files and UnmaskUnitFiles() unmasks them again.
+    pub fn mask_units(
+        &self,
+        names: &[&str],
+        runtime_only: bool,
+        force: bool,
+    ) -> Result<UnitEnablementResponse, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .mask_unit_files(names, runtime_only, force)?
+            .into())
+    }
+
+    /// Similar to mask units except only masks a single unit file
+    pub fn mask_unit(
+        &self,
+        name: &str,
+        runtime_only: bool,
+        force: bool,
+    ) -> Result<UnitEnablementResponse, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .mask_unit_files(&[name], runtime_only, force)?
+            .into())
+    }
+
+    /// MaskUnitFiles() masks unit files and UnmaskUnitFiles() unmasks them again.
+    pub fn unmask_units(
+        &self,
+        names: &[&str],
+        runtime_only: bool,
+    ) -> Result<UnitEnablementResponse, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .unmask_unit_files(names, runtime_only)?
+            .into())
+    }
+
+    /// Similar to unmask units except only masks a single unit file
+    pub fn unmask_unit(
+        &self,
+        name: &str,
+        runtime_only: bool,
+    ) -> Result<UnitEnablementResponse, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .unmask_unit_files(&[name], runtime_only)?
+            .into())
     }
 
     /// May be used to get the unit object path for a unit name. It takes the unit name and returns
