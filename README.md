@@ -10,18 +10,22 @@ The plan is to wrap all useful functionality in nice to use types.
 ## Usage
 
 ```rust
-    use std::error::Error;
-    use systemdzbus::{SystemCtl, ConnectionLevel};
+use std::error::Error;
+use systemdzbus::SystemCtlBuilder;
 
-    async fn example_get_units() -> Result<(), Box::<dyn Error>> {
-        let mut systemctl = SystemCtl::new(ConnectionLevel::UserLevel);
-        systemctl.init().await?;
+async fn example_get_units() -> Result<(), Box::<dyn Error>> {
+    let systemctl = SystemCtlBuilder::new()
+        // You may want to have access to the system bus instead of only the user bus
+        .with_system_connection_level()
+        .init()
+        .await?;
 
-        let units = systemctl.list_units().await?;
+    let units = systemctl.list_units().await?;
 
-        assert!(!units.is_empty());
-        Ok(())
-    }
+    assert!(!units.is_empty());
+
+    Ok(())
+}
 ```
 
 ## Purpose
