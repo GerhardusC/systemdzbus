@@ -83,11 +83,16 @@ pub mod errors;
 pub mod manager;
 pub mod systemctl;
 pub use manager::ManagerProxy;
+pub use systemctl::job::Job;
 pub use systemctl::systemctl_async::SystemCtlBuilder;
 pub use systemctl::systemctl_blocking::SystemCtlBlockingBuilder;
-pub use systemctl::unit::UnitMode;
+pub use systemctl::unit::{
+    Unit, UnitActiveState, UnitChangeKind, UnitEnablementChange, UnitEnablementResponse,
+    UnitLoadState, UnitMode,
+};
+pub use systemctl::unit_file::{EnablementStatus, UnitFile};
 
-pub use zbus::Connection;
+pub use zbus::{Connection, zvariant::OwnedObjectPath};
 
 #[cfg(test)]
 mod tests {
