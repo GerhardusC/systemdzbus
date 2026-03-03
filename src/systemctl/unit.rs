@@ -3,6 +3,56 @@ use zbus::zvariant::OwnedObjectPath;
 // NOTE: These docs are all from the man page of org.freedesktop.systemd1
 
 #[derive(Debug)]
+pub enum UnitEnablementResponse {
+    NoContext,
+    AdditionalContext(Vec<UnitEnablementChange>),
+}
+
+#[derive(Debug)]
+pub struct UnitEnablementChange {
+    pub unit_change_kind: UnitChangeKind,
+    pub filename: String,
+    pub destination: String,
+}
+
+#[derive(Debug)]
+pub enum UnitChangeKind {
+    Symlink,
+    Unlink,
+    Other(String),
+}
+
+impl From<(bool, Vec<(String, String, String)>)> for UnitEnablementResponse {
+    fn from(value: (bool, Vec<(String, String, String)>)) -> Self {
+        if value.0 {
+            UnitEnablementResponse::NoContext
+        } else {
+            UnitEnablementResponse::AdditionalContext(
+                value
+                    .1
+                    .into_iter()
+                    .map(|x| UnitEnablementChange {
+                        unit_change_kind: x.0.into(),
+                        filename: x.1,
+                        destination: x.2,
+                    })
+                    .collect(),
+            )
+        }
+    }
+}
+
+impl From<String> for UnitChangeKind {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "symlink" => UnitChangeKind::Symlink,
+            "unlink" => UnitChangeKind::Unlink,
+            _ => UnitChangeKind::Other(value),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum UnitMode {
     Replace,
     Fail,
