@@ -72,6 +72,18 @@ impl<'a> SystemCtlBlocking<'a> {
             .start_unit(name, &mode.to_string())?)
     }
 
+    /// Similar to StartUnit() but stops the specified unit rather than starting it. Note that the
+    /// "isolate" mode is invalid for this method.
+    pub fn stop_unit(&self, name: &str, mode: UnitMode) -> Result<OwnedObjectPath, SystemdError> {
+        if let UnitMode::Isolate = mode {
+            return Err(SystemdError::IsolateModeUnavailable);
+        };
+
+        Ok(self
+            .get_manager_proxy()
+            .stop_unit(name, &mode.to_string())?)
+    }
+
     /// RestartUnit method, takes in the mode, i.e. same as start unit, I quote:
     /// The mode needs to be one of "replace", "fail", "isolate", "ignore-dependencies", or
     /// "ignore-requirements". returns the object path of the restarted unit.
@@ -85,37 +97,73 @@ impl<'a> SystemCtlBlocking<'a> {
             .restart_unit(name, &mode.to_string())?)
     }
 
+    /// ReloadUnit(), RestartUnit(), TryRestartUnit(), ReloadOrRestartUnit(), or ReloadOrTryRestartUnit() may be used to restart and/or reload a unit. These methods take similar arguments as StartUnit(). Reloading is done only if the
+    /// unit is already running and fails otherwise. If a service is restarted that isn't running, it will be started unless the "Try" flavor is used in which case a service that isn't running is not affected by the restart. The
+    /// "ReloadOrRestart" flavors attempt a reload if the unit supports it and use a restart otherwise.
+    pub fn reload_unit(&self, name: &str, mode: UnitMode) -> Result<OwnedObjectPath, SystemdError> {
+        Ok(self
+            .get_manager_proxy()
+            .reload_unit(name, &mode.to_string())?)
+    }
+
+    /// May be used to enable one or more units in the system (by creating symlinks to them in /etc/ or /run/). It takes a list of unit files to enable (either just file names or full
+    /// absolute paths if the unit files are residing outside the usual unit search paths) and two booleans: the first controls whether the unit shall be enabled for runtime only (true, /run/), or
+    /// persistently (false, /etc/). The second one controls whether symlinks pointing to other units shall be replaced if necessary. This method returns one boolean and an array of the changes made. The
+    /// boolean signals whether the unit files contained any enablement information (i.e. an "Install") section. The changes array consists of structures with three strings: the type of the change (one of
+    /// "symlink" or "unlink"), the file name of the symlink and the destination of the symlink. Note that most of the following calls return a changes list in the same format.
+    pub fn enable_units(
+        &self,
+        _names: &[&str],
+        _runtime_only: bool,
+        _force: bool,
+    ) -> Result<Unit, SystemdError> {
+        // TODO: Add these docs to disable unit and whatever is exposed.
+        // Similarly, DisableUnitFiles() disables one or more units in the system, i.e. removes all symlinks to them in /etc/ and /run/.
+        // The EnableUnitFilesWithFlags() and DisableUnitFilesWithFlags() take in options as flags instead of booleans to allow for extendability, defined as follows:
+        // SD_SYSTEMD_UNIT_RUNTIME will enable or disable the unit for runtime only, SD_SYSTEMD_UNIT_FORCE controls whether symlinks pointing to other units shall be replaced if necessary.
+        // SD_SYSTEMD_UNIT_PORTABLE will add or remove the symlinks in /etc/systemd/system.attached and /run/systemd/system.attached.
+        // Similarly, ReenableUnitFiles() applies the changes to one or more units that would result from disabling and enabling the unit quickly one after the other in an atomic fashion. This is useful to apply
+        // updated "Install" information contained in unit files.
+        // Similarly, LinkUnitFiles() links unit files (that are located outside of the usual unit search paths) into the unit search path.
+        // Similarly, PresetUnitFiles() enables/disables one or more unit files according to the preset policy. See systemd.preset(7) for more information.
+        // Similarly, MaskUnitFiles() masks unit files and UnmaskUnitFiles() unmasks them again.
+        // Ok(self.get_manager_proxy().enable_unit_files(names, runtime_only, force)?)
+        todo!()
+    }
+
     /// Returns an array of all currently loaded units. Note that units may be known by multiple names at the same name, and hence there might be more unit names loaded than actual units behind them.
     pub fn list_units(&self) -> Result<Vec<Unit>, SystemdError> {
-        let units = self.get_manager_proxy().list_units()?;
-
-        Ok(units.into_iter().map(Into::into).collect())
+        Ok(self
+            .get_manager_proxy()
+            .list_units()?
+            .into_iter()
+            .map(Into::into)
+            .collect())
     }
 
     /// May be used to get the unit object path for a unit name. It takes the unit name and returns
     /// the object path. If a unit has not been loaded yet by this name this method will fail.
     pub fn get_unit(&self, name: &str) -> Result<OwnedObjectPath, SystemdError> {
-        let owned_object_path = self.get_manager_proxy().get_unit(name)?;
-
-        Ok(owned_object_path)
+        Ok(self.get_manager_proxy().get_unit(name)?)
     }
 
     /// Returns an array of unit names and their enablement status. Note that ListUnit() returns a list of units currently loaded into memory, while ListUnitFiles() returns a list of unit
     /// files that were found on disk. Note that while most units are read directly from a unit file with the same name, some units are not backed by files and some files (templates) cannot directly be loaded
     /// as units but need to be instantiated instead.
     pub fn list_unit_files(&self) -> Result<Vec<UnitFile>, SystemdError> {
-        let unit_files = self.get_manager_proxy().list_unit_files()?;
-
-        Ok(unit_files.into_iter().map(Into::into).collect())
+        Ok(self
+            .get_manager_proxy()
+            .list_unit_files()?
+            .into_iter()
+            .map(Into::into)
+            .collect())
     }
 
     /// Returns the current enablement status of a specific unit file. The format of the string
     /// here is simply name.service, in other words, if you retrieved the unit files via
     /// list_unit_files, you may want to strip the prefix on the path to get the service name.
     pub fn get_unit_file_state(&self, file: &str) -> Result<EnablementStatus, SystemdError> {
-        let unit_file_state = self.get_manager_proxy().get_unit_file_state(file)?;
-
-        Ok(unit_file_state.into())
+        Ok(self.get_manager_proxy().get_unit_file_state(file)?.into())
     }
 
     /// May be invoked to reload all unit files.

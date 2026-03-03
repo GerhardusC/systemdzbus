@@ -7,4 +7,7 @@ pub enum SystemdError {
 
     #[error("Connection not initialised")]
     InitialisationError,
+
+    #[error("Invalid use of isolate mode in start unit")]
+    IsolateModeUnavailable,
 }
