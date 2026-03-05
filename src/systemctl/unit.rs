@@ -1,25 +1,20 @@
+use std::fmt::Display;
+
 use zbus::zvariant::OwnedObjectPath;
 
 // NOTE: These docs are all from the man page of org.freedesktop.systemd1
 
-#[derive(Debug)]
-pub enum UnitEnablementResponse {
-    NoContext,
-    AdditionalContext(Vec<UnitEnablementChange>),
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct UnitEnablementChange {
     pub unit_change_kind: UnitChangeKind,
     pub filename: String,
     pub destination: String,
 }
 
-#[derive(Debug)]
-pub enum UnitChangeKind {
-    Symlink,
-    Unlink,
-    Other(String),
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum UnitEnablementResponse {
+    NoContext,
+    AdditionalContext(Vec<UnitEnablementChange>),
 }
 
 impl From<Vec<(String, String, String)>> for UnitEnablementResponse {
@@ -57,6 +52,24 @@ impl From<(bool, Vec<(String, String, String)>)> for UnitEnablementResponse {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum UnitChangeKind {
+    Symlink,
+    Unlink,
+    Other(String),
+}
+
+impl Display for UnitChangeKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            UnitChangeKind::Symlink => "symlink",
+            UnitChangeKind::Unlink => "unlink",
+            UnitChangeKind::Other(val) => val,
+        };
+        f.write_str(value)
+    }
+}
+
 impl From<String> for UnitChangeKind {
     fn from(value: String) -> Self {
         match value.as_str() {
@@ -67,7 +80,7 @@ impl From<String> for UnitChangeKind {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnitMode {
     Replace,
     Fail,
@@ -77,7 +90,7 @@ pub enum UnitMode {
     Other(String),
 }
 
-impl std::fmt::Display for UnitMode {
+impl Display for UnitMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mode = match self {
             UnitMode::Replace => "replace",
@@ -87,8 +100,7 @@ impl std::fmt::Display for UnitMode {
             UnitMode::IgnoreRequirements => "ignore-requirements",
             UnitMode::Other(other) => other,
         };
-        f.write_str(mode)?;
-        Ok(())
+        f.write_str(mode)
     }
 }
 
@@ -104,12 +116,11 @@ impl From<String> for UnitMode {
         }
     }
 }
-
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnitLoadState {
     Stub,
     Loaded,
-    NotLoaded,
+    NotFound,
     BadSetting,
     Error,
     Merged,
@@ -122,7 +133,7 @@ impl From<String> for UnitLoadState {
         match value.as_ref() {
             "stub" => UnitLoadState::Stub,
             "loaded" => UnitLoadState::Loaded,
-            "not-found" => UnitLoadState::NotLoaded,
+            "not-found" => UnitLoadState::NotFound,
             "bad-setting" => UnitLoadState::BadSetting,
             "error" => UnitLoadState::Error,
             "merged" => UnitLoadState::Merged,
@@ -132,7 +143,24 @@ impl From<String> for UnitLoadState {
     }
 }
 
-#[derive(Debug)]
+impl Display for UnitLoadState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            UnitLoadState::Stub => "stub",
+            UnitLoadState::Loaded => "loaded",
+            UnitLoadState::NotFound => "not-found",
+            UnitLoadState::BadSetting => "bad-setting",
+            UnitLoadState::Error => "error",
+            UnitLoadState::Merged => "merged",
+            UnitLoadState::Masked => "masked",
+            UnitLoadState::Other(val) => val,
+        };
+
+        f.write_str(value)
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UnitActiveState {
     Active,
     Reloading,
@@ -159,7 +187,23 @@ impl From<String> for UnitActiveState {
     }
 }
 
-#[derive(Debug)]
+impl Display for UnitActiveState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            UnitActiveState::Active => "active",
+            UnitActiveState::Reloading => "reloading",
+            UnitActiveState::Inactive => "inactive",
+            UnitActiveState::Failed => "failed",
+            UnitActiveState::Activating => "activating",
+            UnitActiveState::Deactivating => "deactivating",
+            UnitActiveState::Maintenance => "maintenance",
+            UnitActiveState::Other(val) => val,
+        };
+        f.write_str(value)
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Unit {
     /// The primary unit name as string
     pub name: String,

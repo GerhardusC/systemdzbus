@@ -1,11 +1,13 @@
-#[derive(Debug)]
+use std::fmt::Display;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct UnitFile {
     /// The location of the unit file on disk, I think
     pub path: String,
     pub enablement_status: EnablementStatus,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum EnablementStatus {
     Alias,
     Disabled,
@@ -29,6 +31,22 @@ impl From<String> for EnablementStatus {
             "transient" => EnablementStatus::Transient,
             _ => EnablementStatus::Other(value),
         }
+    }
+}
+
+impl Display for EnablementStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            EnablementStatus::Alias => "alias",
+            EnablementStatus::Disabled => "disabled",
+            EnablementStatus::Enabled => "enabled",
+            EnablementStatus::EnabledRuntime => "enabled-runtime",
+            EnablementStatus::Generated => "generated",
+            EnablementStatus::Static => "static",
+            EnablementStatus::Transient => "transient",
+            EnablementStatus::Other(val) => val,
+        };
+        f.write_str(value)
     }
 }
 

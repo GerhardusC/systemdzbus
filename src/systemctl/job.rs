@@ -1,6 +1,6 @@
 use zbus::zvariant::OwnedObjectPath;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Job {
     /// The numeric job id
     pub id: u32,
